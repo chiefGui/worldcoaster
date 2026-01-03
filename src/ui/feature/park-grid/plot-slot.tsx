@@ -2,6 +2,7 @@ import type { Entity } from '@ecs/entity'
 import { useComponent } from '@ecs/react/use-component'
 import { PlotComponent } from '@game/plot/plot.component'
 import { BuildingComponent, BuildingRegistry } from '@game/building/building.component'
+import { BuildingPlacement } from '@ui/feature/building-placement/building-placement'
 import { cn } from '@ui/lib/cn'
 
 type BuildingDisplayProps = {
@@ -21,10 +22,10 @@ function BuildingDisplay({ entity }: BuildingDisplayProps) {
 
 export type PlotSlotProps = {
   entity: Entity
-  onAddBuilding: (plotEntity: Entity) => void
 }
 
-export function PlotSlot({ entity, onAddBuilding }: PlotSlotProps) {
+export function PlotSlot({ entity }: PlotSlotProps) {
+  const { openForPlot } = BuildingPlacement.usePlacement()
   const plot = useComponent(entity, PlotComponent)
   const buildingEntity = plot?.buildingEntity ?? null
   const isEmpty = buildingEntity === null
@@ -32,7 +33,7 @@ export function PlotSlot({ entity, onAddBuilding }: PlotSlotProps) {
   return (
     <button
       type="button"
-      onClick={() => isEmpty && onAddBuilding(entity)}
+      onClick={() => isEmpty && openForPlot(entity)}
       disabled={!isEmpty}
       className={cn(
         'aspect-square rounded-lg border transition-colors',

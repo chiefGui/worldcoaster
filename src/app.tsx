@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { Game } from '@framework/setup'
+import { AppProviders } from '@ui/provider/app-providers'
 import { GameLayout } from '@ui/layout/game-layout'
 
 export default function App() {
@@ -8,5 +9,9 @@ export default function App() {
     return () => Game.stop()
   }, [])
 
-  return <GameLayout />
+  return (
+    <AppProviders>
+      <GameLayout />
+    </AppProviders>
+  )
 }

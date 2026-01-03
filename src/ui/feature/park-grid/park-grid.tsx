@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef } from 'react'
-import type { Entity } from '@ecs/entity'
 import { useQuery } from '@ecs/react/use-query'
 import { PlotComponent, type PlotData } from '@game/plot/plot.component'
 import { PlotAction } from '@game/plot/plot.action'
@@ -8,11 +7,7 @@ import { PlotSlot } from './plot-slot'
 
 const GRID_SIZE = 6
 
-export type ParkGridProps = {
-  onAddBuilding: (plotEntity: Entity) => void
-}
-
-export function ParkGrid({ onAddBuilding }: ParkGridProps) {
+export function ParkGrid() {
   const schemas = useMemo(() => [PlotComponent] as const, [])
   const plots = useQuery(schemas)
   const initialized = useRef(false)
@@ -48,7 +43,7 @@ export function ParkGrid({ onAddBuilding }: ParkGridProps) {
         style={{ gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)` }}
       >
         {sortedPlots.map((entity) => (
-          <PlotSlot key={entity} entity={entity} onAddBuilding={onAddBuilding} />
+          <PlotSlot key={entity} entity={entity} />
         ))}
       </div>
     </div>
