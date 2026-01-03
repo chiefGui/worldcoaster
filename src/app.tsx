@@ -1,4 +1,4 @@
-import { Component, useEffect, type ReactNode } from 'react'
+import { Component, useEffect, useState, type ReactNode } from 'react'
 import { Game } from '@framework/setup'
 import { AppProviders } from '@ui/provider/app-providers'
 import { GameLayout } from '@ui/layout/game-layout'
@@ -26,14 +26,17 @@ class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryStat
   }
 }
 
-// Initialize game synchronously so park entity exists before first render
-Game.init()
-
 export default function App() {
+  const [ready, setReady] = useState(false)
+
   useEffect(() => {
-    void Game.start()
+    Game.start().then(() => setReady(true))
     return () => Game.stop()
   }, [])
+
+  if (!ready) {
+    return null
+  }
 
   return (
     <ErrorBoundary>
