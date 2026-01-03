@@ -29,6 +29,7 @@ export class Stat {
     const data = World.get(entity, StatComponent)
     if (data) {
       data.values[statId] = value
+      World.notifyChange(entity, StatComponent)
     }
   }
 

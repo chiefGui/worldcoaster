@@ -14,21 +14,20 @@ export function useComponent<T extends ComponentData>(
     (onStoreChange: () => void) => {
       const batchedUpdate = () => ReactBatch.schedule(onStoreChange)
 
-      const unsubAdd = ComponentRegistry.subscribeAdd(schema, (e) => {
+      const handler = (e: Entity) => {
         if (e === entity) {
           cacheRef.current.version++
           batchedUpdate()
         }
-      })
-      const unsubRemove = ComponentRegistry.subscribeRemove(schema, (e) => {
-        if (e === entity) {
-          cacheRef.current.version++
-          batchedUpdate()
-        }
-      })
+      }
+
+      const unsubAdd = ComponentRegistry.subscribeAdd(schema, handler)
+      const unsubRemove = ComponentRegistry.subscribeRemove(schema, handler)
+      const unsubChange = ComponentRegistry.subscribeChange(schema, handler)
       return () => {
         unsubAdd()
         unsubRemove()
+        unsubChange()
       }
     },
     [entity, schema]

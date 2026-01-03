@@ -40,7 +40,7 @@ export class BuildingAction {
 
     this.applyParkEffects(def.on.build?.park, source)
 
-    plot.buildingEntity = entity
+    World.set(plotEntity, PlotComponent, { buildingEntity: entity })
 
     const queueEntity = World.spawn()
     World.add(queueEntity, QueueComponent, {

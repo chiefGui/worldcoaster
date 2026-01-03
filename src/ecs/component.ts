@@ -18,6 +18,7 @@ export class ComponentRegistry {
   private static readonly entityMasks = new Map<Entity, Set<ComponentId>>()
   private static readonly onAdd = new Map<ComponentId, Set<(entity: Entity) => void>>()
   private static readonly onRemove = new Map<ComponentId, Set<(entity: Entity) => void>>()
+  private static readonly onChange = new Map<ComponentId, Set<(entity: Entity) => void>>()
 
   static register<T extends ComponentData>(name: string, defaultFn?: () => T): ComponentSchema<T> {
     if (this.nameToId.has(name)) {
@@ -30,6 +31,7 @@ export class ComponentRegistry {
     this.storage.set(id, new Map())
     this.onAdd.set(id, new Set())
     this.onRemove.set(id, new Set())
+    this.onChange.set(id, new Set())
     return schema
   }
 
@@ -88,6 +90,22 @@ export class ComponentRegistry {
   static subscribeRemove(schema: ComponentSchema, fn: (entity: Entity) => void): () => void {
     this.onRemove.get(schema.id)!.add(fn)
     return () => this.onRemove.get(schema.id)!.delete(fn)
+  }
+
+  static subscribeChange(schema: ComponentSchema, fn: (entity: Entity) => void): () => void {
+    this.onChange.get(schema.id)!.add(fn)
+    return () => this.onChange.get(schema.id)!.delete(fn)
+  }
+
+  static set<T extends ComponentData>(entity: Entity, schema: ComponentSchema<T>, data: T): void {
+    const store = this.storage.get(schema.id)!
+    if (!store.has(entity)) return
+    store.set(entity, data)
+    this.onChange.get(schema.id)!.forEach(fn => fn(entity))
+  }
+
+  static notifyChange(entity: Entity, schema: ComponentSchema): void {
+    this.onChange.get(schema.id)?.forEach(fn => fn(entity))
   }
 
   static clearEntity(entity: Entity): void {
