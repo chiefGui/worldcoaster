@@ -1,5 +1,6 @@
+import { useState, useEffect } from 'react'
 import type { Entity } from '@ecs/entity'
-import { useComponent } from '@ecs/react/use-component'
+import { World } from '@ecs/world'
 import { PlotComponent } from '@game/plot/plot.component'
 import { BuildingComponent, BuildingRegistry } from '@game/building/building.component'
 import { BuildingPlacement } from '@ui/feature/building-placement/building-placement'
@@ -10,7 +11,15 @@ type BuildingDisplayProps = {
 }
 
 function BuildingDisplay({ entity }: BuildingDisplayProps) {
-  const building = useComponent(entity, BuildingComponent)
+  const [building, setBuilding] = useState(() => World.get(entity, BuildingComponent))
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBuilding(World.get(entity, BuildingComponent))
+    }, 100)
+    return () => clearInterval(interval)
+  }, [entity])
+
   const buildingDef = building ? BuildingRegistry.get(building.id) : null
 
   if (buildingDef?.icon) {
@@ -30,7 +39,18 @@ export type PlotSlotProps = {
 
 export function PlotSlot({ entity }: PlotSlotProps) {
   const { openForPlot } = BuildingPlacement.usePlacement()
-  const plot = useComponent(entity, PlotComponent)
+
+  // Bypass useComponent - poll directly to debug
+  const [plot, setPlot] = useState(() => World.get(entity, PlotComponent))
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const current = World.get(entity, PlotComponent)
+      setPlot(current)
+    }, 100)
+    return () => clearInterval(interval)
+  }, [entity])
+
   const buildingEntity = plot?.buildingEntity ?? null
   const isEmpty = buildingEntity === null
 

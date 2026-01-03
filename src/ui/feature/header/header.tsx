@@ -1,6 +1,5 @@
-import { useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useQuery } from '@ecs/react/use-query'
-import { useTick } from '@ecs/react/use-world'
 import { GuestComponent } from '@game/guest/guest.component'
 import { Park } from '@game/park'
 import { HamburgerMenu } from '@ui/feature/hamburger-menu'
@@ -10,15 +9,25 @@ export function Header() {
   const schemas = useMemo(() => [GuestComponent] as const, [])
   const guests = useQuery(schemas)
 
-  const getMoney = useCallback(() => {
+  // Bypass useTick - poll directly to debug
+  const [money, setMoney] = useState(() => {
     try {
       return Park.money()
     } catch {
       return 0
     }
-  }, [])
+  })
 
-  const money = useTick(getMoney)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      try {
+        setMoney(Park.money())
+      } catch {
+        setMoney(0)
+      }
+    }, 100)
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <header className="flex items-center gap-3 px-2 py-2 bg-bg-secondary border-b border-border">
