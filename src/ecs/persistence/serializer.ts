@@ -45,10 +45,6 @@ export class WorldSerializer {
   }
 
   static deserialize(data: SerializedWorld): void {
-    if (data.version !== this.VERSION) {
-      console.warn(`Save version mismatch: ${data.version} vs ${this.VERSION}, ignoring save`)
-      return
-    }
     for (const serialized of data.entities) {
       EntityManager.restore(serialized.id)
       for (const [componentName, componentData] of Object.entries(serialized.components)) {
