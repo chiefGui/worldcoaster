@@ -27,7 +27,7 @@ export function Header() {
       <div className="flex items-center gap-4 pr-2">
         <div className="flex items-center gap-2 text-text-secondary">
           <span className="text-sm">Money:</span>
-          <span className="font-medium text-text-primary">{Format.money(money)}</span>
+          <span className="font-medium text-text-primary">{Format.moneyCompact(money)}</span>
         </div>
         <div className="flex items-center gap-2 text-text-secondary">
           <span className="text-sm">Guests:</span>

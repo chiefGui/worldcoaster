@@ -50,6 +50,16 @@ export class World {
     return ComponentRegistry.has(entity, schema)
   }
 
+  static set<T extends ComponentData>(entity: Entity, schema: ComponentSchema<T>, data: T): void {
+    ComponentRegistry.set(entity, schema, data)
+    EventBus.emit(EcsEvent.COMPONENT_CHANGED, { entity, component: schema.id })
+  }
+
+  static notifyChange(entity: Entity, schema: ComponentSchema): void {
+    ComponentRegistry.notifyChange(entity, schema)
+    EventBus.emit(EcsEvent.COMPONENT_CHANGED, { entity, component: schema.id })
+  }
+
   static query(schema: QuerySchema): ReadonlySet<Entity> {
     return QueryManager.get(schema)
   }

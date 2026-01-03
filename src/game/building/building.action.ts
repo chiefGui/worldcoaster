@@ -11,7 +11,7 @@ import {
   type BuildingDefinition,
   type StatChanges,
 } from './building.component'
-import { PlotComponent } from '../plot/plot.component'
+import { Plot } from '../plot/plot.component'
 import { QueueComponent } from '../queue/queue.component'
 
 export type BuildParams = {
@@ -25,8 +25,7 @@ export class BuildingAction {
     const def = BuildingRegistry.get(buildingId)
     if (!def) return null
 
-    const plot = World.get(plotEntity, PlotComponent)
-    if (!plot || plot.buildingEntity !== null) return null
+    if (!Plot.isEmpty(plotEntity)) return null
 
     const buildCost = this.getBuildCost(def)
     if (!Park.canAfford(buildCost)) return null
@@ -40,7 +39,7 @@ export class BuildingAction {
 
     this.applyParkEffects(def.on.build?.park, source)
 
-    plot.buildingEntity = entity
+    Plot.setBuilding(plotEntity, entity)
 
     const queueEntity = World.spawn()
     World.add(queueEntity, QueueComponent, {

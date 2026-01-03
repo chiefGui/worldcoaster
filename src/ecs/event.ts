@@ -6,6 +6,7 @@ export const EcsEvent = {
   ENTITY_DESTROYED: 'ecs:entity:destroyed',
   COMPONENT_ADDED: 'ecs:component:added',
   COMPONENT_REMOVED: 'ecs:component:removed',
+  COMPONENT_CHANGED: 'ecs:component:changed',
   WORLD_STARTED: 'ecs:world:started',
   WORLD_STOPPED: 'ecs:world:stopped',
   WORLD_TICK: 'ecs:world:tick',
@@ -18,6 +19,7 @@ export type EcsEventPayload = {
   [EcsEvent.ENTITY_DESTROYED]: Entity
   [EcsEvent.COMPONENT_ADDED]: { entity: Entity; component: ComponentId }
   [EcsEvent.COMPONENT_REMOVED]: { entity: Entity; component: ComponentId }
+  [EcsEvent.COMPONENT_CHANGED]: { entity: Entity; component: ComponentId }
   [EcsEvent.WORLD_STARTED]: null
   [EcsEvent.WORLD_STOPPED]: null
   [EcsEvent.WORLD_TICK]: { dt: number }
