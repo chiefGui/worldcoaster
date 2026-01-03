@@ -35,11 +35,16 @@ export function BuildingPicker({ plotEntity, onClose }: BuildingPickerProps) {
               key={building.id}
               type="button"
               onClick={() => handleSelect(building.id)}
-              className="p-4 rounded-lg bg-bg-tertiary border border-border-subtle hover:border-accent transition-colors text-left"
+              className="p-4 rounded-lg bg-bg-tertiary border border-border-subtle hover:border-accent transition-colors text-left flex items-center gap-3"
             >
-              <div className="font-medium text-text-primary">{building.name}</div>
-              <div className="text-xs text-text-muted mt-1">
-                ${cost} · {building.capacity} capacity
+              {building.icon && (
+                <img src={building.icon} alt="" className="w-10 h-10 flex-shrink-0" />
+              )}
+              <div>
+                <div className="font-medium text-text-primary">{building.name}</div>
+                <div className="text-xs text-text-muted mt-1">
+                  ${cost} · {building.capacity} capacity
+                </div>
               </div>
             </button>
           )

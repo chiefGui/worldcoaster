@@ -13,6 +13,10 @@ function BuildingDisplay({ entity }: BuildingDisplayProps) {
   const building = useComponent(entity, BuildingComponent)
   const buildingDef = building ? BuildingRegistry.get(building.id) : null
 
+  if (buildingDef?.icon) {
+    return <img src={buildingDef.icon} alt={buildingDef.name} className="w-8 h-8" />
+  }
+
   return (
     <span className="text-xs text-text-secondary text-center px-1">
       {buildingDef?.name ?? 'Building'}

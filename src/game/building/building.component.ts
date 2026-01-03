@@ -36,6 +36,7 @@ export type BuildingHooks = {
 export type BuildingDefinition = {
   id: BuildingId
   name: string
+  icon?: string
   input: StatEffect[]
   output: StatEffect[]
   capacity: number
