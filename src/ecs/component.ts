@@ -37,6 +37,15 @@ export class ComponentRegistry {
     return this.nameToId.get(name)
   }
 
+  static getSchema(id: ComponentId): ComponentSchema | undefined {
+    return this.schemas.get(id)
+  }
+
+  static getSchemaByName(name: string): ComponentSchema | undefined {
+    const id = this.nameToId.get(name)
+    return id !== undefined ? this.schemas.get(id) : undefined
+  }
+
   static add<T extends ComponentData>(entity: Entity, schema: ComponentSchema<T>, data: T): void {
     const store = this.storage.get(schema.id)!
     store.set(entity, data)
