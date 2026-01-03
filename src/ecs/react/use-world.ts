@@ -1,18 +1,21 @@
 import { useSyncExternalStore, useCallback, useRef } from 'react'
-import { EventBus } from '../event'
+import { EventBus, EcsEvent } from '../event'
 import { World } from '../world'
+import { ReactBatch } from './batch'
 
 export function useEntityCount(): number {
   const countRef = useRef(World.entityCount())
 
   const subscribe = useCallback((onStoreChange: () => void) => {
-    const unsubCreate = EventBus.on('entity:created', () => {
+    const batchedUpdate = () => ReactBatch.schedule(onStoreChange)
+
+    const unsubCreate = EventBus.on(EcsEvent.ENTITY_CREATED, () => {
       countRef.current = World.entityCount()
-      onStoreChange()
+      batchedUpdate()
     })
-    const unsubDestroy = EventBus.on('entity:destroyed', () => {
+    const unsubDestroy = EventBus.on(EcsEvent.ENTITY_DESTROYED, () => {
       countRef.current = World.entityCount()
-      onStoreChange()
+      batchedUpdate()
     })
     return () => {
       unsubCreate()
@@ -27,8 +30,10 @@ export function useEntityCount(): number {
 
 export function useWorldRunning(): boolean {
   const subscribe = useCallback((onStoreChange: () => void) => {
-    const unsub1 = EventBus.on('world:started', onStoreChange)
-    const unsub2 = EventBus.on('world:stopped', onStoreChange)
+    const batchedUpdate = () => ReactBatch.schedule(onStoreChange)
+
+    const unsub1 = EventBus.on(EcsEvent.WORLD_STARTED, batchedUpdate)
+    const unsub2 = EventBus.on(EcsEvent.WORLD_STOPPED, batchedUpdate)
     return () => {
       unsub1()
       unsub2()

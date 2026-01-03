@@ -4,6 +4,7 @@ import type { ComponentSchema } from '../component'
 import type { QuerySchema } from '../query'
 import { World } from '../world'
 import { QueryManager } from '../query'
+import { ReactBatch } from './batch'
 
 export function useQuery(
   withSchemas: readonly ComponentSchema[],
@@ -25,7 +26,7 @@ export function useQuerySchema(query: QuerySchema): readonly Entity[] {
     (onStoreChange: () => void) => {
       return QueryManager.subscribe(query, () => {
         versionRef.current++
-        onStoreChange()
+        ReactBatch.schedule(onStoreChange)
       })
     },
     [query]
@@ -33,12 +34,21 @@ export function useQuerySchema(query: QuerySchema): readonly Entity[] {
 
   const getSnapshot = useCallback(() => {
     const set = QueryManager.get(query)
-    const arr = Array.from(set)
-    if (
-      arr.length !== cacheRef.current.length ||
-      arr.some((e, i) => e !== cacheRef.current[i])
-    ) {
-      cacheRef.current = arr
+    if (set.size !== cacheRef.current.length) {
+      cacheRef.current = Array.from(set)
+    } else {
+      let i = 0
+      let dirty = false
+      for (const entity of set) {
+        if (cacheRef.current[i] !== entity) {
+          dirty = true
+          break
+        }
+        i++
+      }
+      if (dirty) {
+        cacheRef.current = Array.from(set)
+      }
     }
     return cacheRef.current
   }, [query])

@@ -1,3 +1,4 @@
+import type { QuerySchema } from '@ecs/query'
 import { World } from '@ecs/world'
 import { System, After } from '@ecs/decorator'
 import { QueueComponent, Queue } from './queue.component'
@@ -9,8 +10,14 @@ import { Modifier } from '@framework/modifier/modifier.component'
 @System('queue')
 @After('guest')
 export class QueueSystem {
+  private static queueQuery: QuerySchema | null = null
+
+  private static getQueueQuery(): QuerySchema {
+    return this.queueQuery ??= World.createQuery([QueueComponent])
+  }
+
   static tick(_dt: number): void {
-    const queues = World.query(World.createQuery([QueueComponent]))
+    const queues = World.query(this.getQueueQuery())
 
     for (const queueEntity of queues) {
       const buildingEntity = Queue.building(queueEntity)

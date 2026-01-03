@@ -1,3 +1,4 @@
+import type { QuerySchema } from '@ecs/query'
 import { World } from '@ecs/world'
 import { System } from '@ecs/decorator'
 import { GuestComponent, Guest } from './guest.component'
@@ -11,15 +12,38 @@ import { Modifier } from '@framework/modifier/modifier.component'
 
 @System('guest')
 export class GuestSystem {
+  private static guestQuery: QuerySchema | null = null
+  private static buildingQuery: QuerySchema | null = null
+  private static queueQuery: QuerySchema | null = null
+
+  private static getGuestQuery(): QuerySchema {
+    return this.guestQuery ??= World.createQuery([GuestComponent])
+  }
+
+  private static getBuildingQuery(): QuerySchema {
+    return this.buildingQuery ??= World.createQuery([BuildingComponent])
+  }
+
+  private static getQueueQuery(): QuerySchema {
+    return this.queueQuery ??= World.createQuery([QueueComponent])
+  }
+
   private static findRandomBuilding(): number | null {
-    const buildings = World.query(World.createQuery([BuildingComponent]))
-    const arr = Array.from(buildings)
-    if (arr.length === 0) return null
-    return arr[Math.floor(Math.random() * arr.length)] ?? null
+    const buildings = World.query(this.getBuildingQuery())
+    const size = buildings.size
+    if (size === 0) return null
+
+    const targetIdx = Math.floor(Math.random() * size)
+    let idx = 0
+    for (const entity of buildings) {
+      if (idx === targetIdx) return entity
+      idx++
+    }
+    return null
   }
 
   private static findQueueForBuilding(buildingEntity: number): number | null {
-    const queues = World.query(World.createQuery([QueueComponent]))
+    const queues = World.query(this.getQueueQuery())
     for (const queueEntity of queues) {
       if (Queue.building(queueEntity) === buildingEntity) {
         return queueEntity
@@ -64,7 +88,7 @@ export class GuestSystem {
   }
 
   static tick(dt: number): void {
-    const guests = World.query(World.createQuery([GuestComponent]))
+    const guests = World.query(this.getGuestQuery())
 
     for (const entity of guests) {
       const state = Guest.state(entity)

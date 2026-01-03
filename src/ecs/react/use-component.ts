@@ -2,6 +2,7 @@ import { useSyncExternalStore, useCallback, useRef } from 'react'
 import type { Entity } from '../entity'
 import type { ComponentData, ComponentSchema } from '../component'
 import { ComponentRegistry } from '../component'
+import { ReactBatch } from './batch'
 
 export function useComponent<T extends ComponentData>(
   entity: Entity,
@@ -11,16 +12,18 @@ export function useComponent<T extends ComponentData>(
 
   const subscribe = useCallback(
     (onStoreChange: () => void) => {
+      const batchedUpdate = () => ReactBatch.schedule(onStoreChange)
+
       const unsubAdd = ComponentRegistry.subscribeAdd(schema, (e) => {
         if (e === entity) {
           versionRef.current++
-          onStoreChange()
+          batchedUpdate()
         }
       })
       const unsubRemove = ComponentRegistry.subscribeRemove(schema, (e) => {
         if (e === entity) {
           versionRef.current++
-          onStoreChange()
+          batchedUpdate()
         }
       })
       return () => {
