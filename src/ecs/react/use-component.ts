@@ -8,7 +8,7 @@ export function useComponent<T extends ComponentData>(
   entity: Entity,
   schema: ComponentSchema<T>
 ): T | undefined {
-  const versionRef = useRef(0)
+  const cacheRef = useRef<{ version: number; data: T | undefined }>({ version: 0, data: undefined })
 
   const subscribe = useCallback(
     (onStoreChange: () => void) => {
@@ -16,13 +16,13 @@ export function useComponent<T extends ComponentData>(
 
       const unsubAdd = ComponentRegistry.subscribeAdd(schema, (e) => {
         if (e === entity) {
-          versionRef.current++
+          cacheRef.current.version++
           batchedUpdate()
         }
       })
       const unsubRemove = ComponentRegistry.subscribeRemove(schema, (e) => {
         if (e === entity) {
-          versionRef.current++
+          cacheRef.current.version++
           batchedUpdate()
         }
       })
@@ -36,9 +36,16 @@ export function useComponent<T extends ComponentData>(
 
   const getSnapshot = useCallback(() => {
     const data = ComponentRegistry.get(entity, schema)
-    return data ? { version: versionRef.current, data } : undefined
+    const cache = cacheRef.current
+
+    if (cache.data === data) {
+      return cache
+    }
+
+    cache.data = data
+    return cache
   }, [entity, schema])
 
   const result = useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
-  return result?.data as T | undefined
+  return result.data
 }
