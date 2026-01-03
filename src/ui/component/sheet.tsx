@@ -52,8 +52,8 @@ const Content = forwardRef<HTMLDivElement, SheetContentProps>(
           'fixed inset-x-0 bottom-0 z-50',
           'bg-bg-secondary border-t border-border rounded-t-2xl',
           'shadow-lg max-h-[85vh] overflow-auto',
-          'transition-transform duration-200 ease-out',
-          'data-[enter]:animate-sheet-up data-[leave]:animate-sheet-down',
+          'translate-y-full transition-transform duration-200 ease-out',
+          'data-[enter]:translate-y-0',
           className
         )}
         backdrop={false}
