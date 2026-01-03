@@ -1,12 +1,9 @@
-import { World } from '@ecs/world'
+import { System } from '@ecs/decorator'
 import { GameTime } from './time'
 
+@System('time')
 export class TimeSystem {
-  private static readonly NAME = 'time'
-
-  static register(): void {
-    World.registerSystem(this.NAME, (dt: number) => {
-      GameTime.tick(dt)
-    })
+  static tick(dt: number): void {
+    GameTime.tick(dt)
   }
 }

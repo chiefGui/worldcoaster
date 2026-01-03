@@ -1,9 +1,6 @@
 import { World } from '@ecs/world'
 import type { Entity } from '@ecs/entity'
 import type { ComponentSchema } from '@ecs/component'
-import { StatComponent, Stat } from '@framework/stat/stat.component'
-import { ModifierComponent } from '@framework/modifier/modifier.component'
-import { Plot } from '../plot/plot.component'
 
 export type BuildingTypeId = string
 
@@ -44,32 +41,23 @@ export class BuildingRegistry {
 }
 
 export class Building {
-  static create(plotEntity: Entity, typeId: BuildingTypeId): Entity {
-    const def = BuildingRegistry.get(typeId)
-    if (!def) throw new Error(`Unknown building type: ${typeId}`)
-
-    const entity = World.spawn()
-    World.add(entity, BuildingComponent, { typeId, plotEntity })
-    World.add(entity, StatComponent, { values: {} })
-    World.add(entity, ModifierComponent, { modifiers: [] })
-
-    Stat.set(entity, 'capacity', def.capacity)
-    Stat.set(entity, 'rideDuration', def.rideDuration)
-    Stat.set(entity, 'ticketPrice', def.inputAmount)
-
-    Plot.setBuilding(plotEntity, entity)
-
-    return entity
+  static get(entity: Entity): BuildingData | undefined {
+    return World.get(entity, BuildingComponent)
   }
 
-  static getType(entity: Entity): BuildingTypeDefinition | undefined {
-    const data = World.get(entity, BuildingComponent)
-    return data ? BuildingRegistry.get(data.typeId) : undefined
+  static typeId(entity: Entity): BuildingTypeId | undefined {
+    const building = World.get(entity, BuildingComponent)
+    return building?.typeId
   }
 
-  static getPlot(entity: Entity): Entity | null {
-    const data = World.get(entity, BuildingComponent)
-    return data?.plotEntity ?? null
+  static type(entity: Entity): BuildingTypeDefinition | undefined {
+    const building = World.get(entity, BuildingComponent)
+    return building ? BuildingRegistry.get(building.typeId) : undefined
+  }
+
+  static plot(entity: Entity): Entity | undefined {
+    const building = World.get(entity, BuildingComponent)
+    return building?.plotEntity
   }
 }
 

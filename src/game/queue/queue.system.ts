@@ -1,33 +1,36 @@
 import { World } from '@ecs/world'
+import { System, After } from '@ecs/decorator'
 import { QueueComponent, Queue } from './queue.component'
+import { QueueAction } from './queue.action'
 import { Building } from '../building/building.component'
-import { Guest } from '../guest/guest.component'
-import { Action } from '@framework/action'
+import { GuestAction } from '../guest/guest.action'
 import { Modifier } from '@framework/modifier/modifier.component'
 
+@System('queue')
+@After('guest')
 export class QueueSystem {
-  private static readonly NAME = 'queue'
+  static tick(_dt: number): void {
+    const queues = World.query(World.createQuery([QueueComponent]))
 
-  static register(): void {
-    World.registerSystem(this.NAME, (_dt: number) => {
-      const queues = World.query(World.createQuery([QueueComponent]))
+    for (const queueEntity of queues) {
+      const buildingEntity = Queue.building(queueEntity)
+      if (!buildingEntity) continue
 
-      for (const queueEntity of queues) {
-        const buildingEntity = Queue.getBuilding(queueEntity)
-        if (!buildingEntity) continue
+      const def = Building.type(buildingEntity)
+      if (!def) continue
 
-        const def = Building.getType(buildingEntity)
-        if (!def) continue
+      const capacity = Math.floor(Modifier.compute(buildingEntity, 'capacity', def.capacity))
+      const guests = QueueAction.dequeue({ queueEntity, count: capacity, source: 'queue-system' })
 
-        const capacity = Math.floor(Modifier.compute(buildingEntity, 'capacity', def.capacity))
-        const guests = Queue.dequeue(queueEntity, capacity)
-
-        for (const guestEntity of guests) {
-          const rideDuration = Modifier.compute(buildingEntity, 'rideDuration', def.rideDuration)
-          Guest.setRideTime(guestEntity, rideDuration)
-          Action.guestStateChange(guestEntity, 'riding', buildingEntity, 'queue-system')
-        }
+      for (const guestEntity of guests) {
+        const rideDuration = Modifier.compute(buildingEntity, 'rideDuration', def.rideDuration)
+        GuestAction.startRide({
+          entity: guestEntity,
+          buildingEntity,
+          duration: rideDuration,
+          source: 'queue-system',
+        })
       }
-    }, ['guest'])
+    }
   }
 }

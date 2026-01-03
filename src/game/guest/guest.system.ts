@@ -1,14 +1,16 @@
 import { World } from '@ecs/world'
+import { System } from '@ecs/decorator'
 import { GuestComponent, Guest } from './guest.component'
+import { GuestAction } from './guest.action'
 import { BuildingComponent, Building } from '../building/building.component'
 import { QueueComponent, Queue } from '../queue/queue.component'
-import { Action } from '@framework/action'
+import { QueueAction } from '../queue/queue.action'
 import { Stat } from '@framework/stat/stat.component'
+import { StatAction } from '@framework/stat/stat.action'
 import { Modifier } from '@framework/modifier/modifier.component'
 
+@System('guest')
 export class GuestSystem {
-  private static readonly NAME = 'guest'
-
   private static findRandomBuilding(): number | null {
     const buildings = World.query(World.createQuery([BuildingComponent]))
     const arr = Array.from(buildings)
@@ -19,7 +21,7 @@ export class GuestSystem {
   private static findQueueForBuilding(buildingEntity: number): number | null {
     const queues = World.query(World.createQuery([QueueComponent]))
     for (const queueEntity of queues) {
-      if (Queue.getBuilding(queueEntity) === buildingEntity) {
+      if (Queue.building(queueEntity) === buildingEntity) {
         return queueEntity
       }
     }
@@ -30,7 +32,7 @@ export class GuestSystem {
     const building = this.findRandomBuilding()
     if (!building) return
 
-    const def = Building.getType(building)
+    const def = Building.type(building)
     if (!def) return
 
     const ticketPrice = Modifier.compute(building, 'ticketPrice', def.inputAmount)
@@ -41,47 +43,45 @@ export class GuestSystem {
 
     if (Queue.isFull(queueEntity)) return
 
-    if (Action.guestPay(entity, ticketPrice, def.id)) {
-      Queue.join(queueEntity, entity)
-      Action.guestStateChange(entity, 'queuing', queueEntity, 'guest-system')
+    if (GuestAction.pay({ entity, amount: ticketPrice, source: def.id })) {
+      QueueAction.join({ queueEntity, guestEntity: entity, source: 'guest-system' })
+      GuestAction.changeState({ entity, newState: 'queuing', target: queueEntity, source: 'guest-system' })
     }
   }
 
   private static processRidingGuest(entity: number, dt: number): void {
-    const finished = Guest.tickRide(entity, dt)
+    const finished = GuestAction.tickRide({ entity, dt })
     if (finished) {
-      const target = Guest.getTarget(entity)
+      const target = Guest.target(entity)
       if (target) {
-        const def = Building.getType(target)
+        const def = Building.type(target)
         if (def) {
-          Action.changeStat(entity, def.outputStat, def.outputAmount, def.id)
+          StatAction.change({ entity, statId: def.outputStat, delta: def.outputAmount, source: def.id })
         }
       }
-      Action.guestStateChange(entity, 'idle', null, 'guest-system')
+      GuestAction.changeState({ entity, newState: 'idle', target: null, source: 'guest-system' })
     }
   }
 
-  static register(): void {
-    World.registerSystem(this.NAME, (dt: number) => {
-      const guests = World.query(World.createQuery([GuestComponent]))
+  static tick(dt: number): void {
+    const guests = World.query(World.createQuery([GuestComponent]))
 
-      for (const entity of guests) {
-        const state = Guest.getState(entity)
+    for (const entity of guests) {
+      const state = Guest.state(entity)
 
-        switch (state) {
-          case 'idle':
-            this.processIdleGuest(entity)
-            break
-          case 'riding':
-            this.processRidingGuest(entity, dt)
-            break
-        }
-
-        const happiness = Stat.get(entity, 'happiness')
-        if (happiness <= 0) {
-          Action.guestStateChange(entity, 'leaving', null, 'guest-system')
-        }
+      switch (state) {
+        case 'idle':
+          this.processIdleGuest(entity)
+          break
+        case 'riding':
+          this.processRidingGuest(entity, dt)
+          break
       }
-    })
+
+      const happiness = Stat.get(entity, 'happiness')
+      if (happiness <= 0) {
+        GuestAction.changeState({ entity, newState: 'leaving', target: null, source: 'guest-system' })
+      }
+    }
   }
 }

@@ -1,4 +1,5 @@
 import { World } from '@ecs/world'
+import { SystemRegistry } from '@ecs/decorator'
 import { TimeSystem } from './system'
 import { GuestSystem } from '@game/guest/guest.system'
 import { QueueSystem } from '@game/queue/queue.system'
@@ -13,9 +14,7 @@ export class Game {
     if (this.initialized) return
     this.initialized = true
 
-    TimeSystem.register()
-    GuestSystem.register()
-    QueueSystem.register()
+    SystemRegistry.registerAll(TimeSystem, GuestSystem, QueueSystem)
   }
 
   static start(): void {

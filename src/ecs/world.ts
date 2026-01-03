@@ -6,7 +6,7 @@ import { EntityManager } from './entity'
 import { ComponentRegistry } from './component'
 import { QueryManager } from './query'
 import { SystemManager } from './system'
-import { EventBus } from './event'
+import { EventBus, EcsEvent } from './event'
 
 export class World {
   private static running = false
@@ -16,7 +16,7 @@ export class World {
 
   static spawn(): Entity {
     const entity = EntityManager.create()
-    EventBus.emit('entity:created', entity)
+    EventBus.emit(EcsEvent.ENTITY_CREATED, entity)
     return entity
   }
 
@@ -25,19 +25,19 @@ export class World {
     QueryManager.removeEntity(entity)
     ComponentRegistry.clearEntity(entity)
     EntityManager.destroy(entity)
-    EventBus.emit('entity:destroyed', entity)
+    EventBus.emit(EcsEvent.ENTITY_DESTROYED, entity)
   }
 
   static add<T extends ComponentData>(entity: Entity, schema: ComponentSchema<T>, data: T): void {
     ComponentRegistry.add(entity, schema, data)
     this.componentChangeQueue.push(entity)
-    EventBus.emit('component:added', { entity, component: schema.id })
+    EventBus.emit(EcsEvent.COMPONENT_ADDED, { entity, component: schema.id })
   }
 
   static remove(entity: Entity, schema: ComponentSchema): void {
     ComponentRegistry.remove(entity, schema)
     this.componentChangeQueue.push(entity)
-    EventBus.emit('component:removed', { entity, component: schema.id })
+    EventBus.emit(EcsEvent.COMPONENT_REMOVED, { entity, component: schema.id })
   }
 
   static get<T extends ComponentData>(entity: Entity, schema: ComponentSchema<T>): T | undefined {
@@ -55,9 +55,7 @@ export class World {
   static createQuery(withSchemas: readonly ComponentSchema[], without?: readonly ComponentSchema[]): QuerySchema {
     const withIds = withSchemas.map(s => s.id)
     const withoutIds = without?.map(s => s.id)
-    const query = QueryManager.create(withIds, withoutIds)
-    QueryManager.rebuild(query)
-    return query
+    return QueryManager.create(withIds, withoutIds)
   }
 
   static registerSystem(name: string, fn: SystemFn, after: readonly string[] = []): void {
@@ -72,7 +70,7 @@ export class World {
     if (this.running) return
     this.running = true
     this.lastTime = performance.now()
-    EventBus.emit('world:started', null)
+    EventBus.emit(EcsEvent.WORLD_STARTED, null)
     this.loop()
   }
 
@@ -82,7 +80,7 @@ export class World {
       cancelAnimationFrame(this.frameId)
       this.frameId = 0
     }
-    EventBus.emit('world:stopped', null)
+    EventBus.emit(EcsEvent.WORLD_STOPPED, null)
   }
 
   private static loop = (): void => {
