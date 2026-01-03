@@ -26,6 +26,9 @@ class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryStat
   }
 }
 
+// Initialize game synchronously so park entity exists before first render
+Game.init()
+
 export default function App() {
   useEffect(() => {
     void Game.start()
