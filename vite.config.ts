@@ -1,0 +1,15 @@
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+import { resolve } from 'path'
+
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+  resolve: {
+    alias: {
+      '@ecs': resolve(__dirname, './src/ecs'),
+      '@framework': resolve(__dirname, './src/framework'),
+      '@game': resolve(__dirname, './src/game'),
+    },
+  },
+})
