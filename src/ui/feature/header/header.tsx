@@ -4,6 +4,7 @@ import { useTick } from '@ecs/react/use-world'
 import { GuestComponent } from '@game/guest/guest.component'
 import { Park } from '@game/park'
 import { HamburgerMenu } from '@ui/feature/hamburger-menu'
+import { Format } from '@ui/lib/format'
 
 export function Header() {
   const schemas = useMemo(() => [GuestComponent] as const, [])
@@ -26,7 +27,7 @@ export function Header() {
       <div className="flex items-center gap-4 pr-2">
         <div className="flex items-center gap-2 text-text-secondary">
           <span className="text-sm">Money:</span>
-          <span className="font-medium text-text-primary">${money.toLocaleString()}</span>
+          <span className="font-medium text-text-primary">{Format.money(money)}</span>
         </div>
         <div className="flex items-center gap-2 text-text-secondary">
           <span className="text-sm">Guests:</span>
