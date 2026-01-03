@@ -3,12 +3,16 @@ import {
   useContext,
   useCallback,
   useMemo,
+  useState,
   type ReactNode,
 } from 'react'
-import { Menu, Settings, HelpCircle, Volume2, Palette, RotateCcw } from 'lucide-react'
+import { Menu, Settings, HelpCircle, Volume2, Palette, RotateCcw, AlertTriangle } from 'lucide-react'
 import * as Ariakit from '@ariakit/react'
 import { Drawer } from '@ui/component/drawer'
 import { NavigationMenu } from '@ui/component/navigation-menu'
+import { Toast } from '@ui/component/toast'
+import { Persistence } from '@ecs/persistence/persistence'
+import { Game } from '@framework/setup'
 import { cn } from '@ui/lib/cn'
 
 type HamburgerMenuContextValue = {
@@ -144,8 +148,8 @@ function DefaultMenuContent({ onClose }: DefaultMenuContentProps) {
           </NavigationMenu.Section>
           <NavigationMenu.Section title="Danger Zone">
             <NavigationMenu.Item
+              to="settings/reset"
               icon={<RotateCcw className="size-5" />}
-              onClick={onClose}
             >
               Reset Progress
             </NavigationMenu.Item>
@@ -168,7 +172,71 @@ function DefaultMenuContent({ onClose }: DefaultMenuContentProps) {
           <p className="text-sm text-text-secondary">Appearance settings coming soon...</p>
         </div>
       </NavigationMenu.Panel>
+
+      {/* Reset Progress Confirmation Panel */}
+      <NavigationMenu.Panel id="settings/reset" parent="settings" title="Reset Progress">
+        <NavigationMenu.Header />
+        <ResetConfirmationContent onClose={onClose} />
+      </NavigationMenu.Panel>
     </>
+  )
+}
+
+type ResetConfirmationContentProps = {
+  onClose: () => void
+}
+
+function ResetConfirmationContent({ onClose }: ResetConfirmationContentProps) {
+  const [isResetting, setIsResetting] = useState(false)
+
+  const handleReset = useCallback(async () => {
+    setIsResetting(true)
+    try {
+      Persistence.stopAutoSave()
+      await Persistence.delete()
+      Game.reset()
+      onClose()
+      Toast.success('Progress reset successfully')
+      // Give toast time to show, then reload for fresh state
+      setTimeout(() => {
+        window.location.reload()
+      }, 500)
+    } catch (error) {
+      console.error('Failed to reset progress:', error)
+      Toast.error('Failed to reset progress')
+      setIsResetting(false)
+    }
+  }, [onClose])
+
+  return (
+    <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-6">
+      <div className="flex items-start gap-3 p-4 rounded-lg bg-error/10 border border-error/20">
+        <AlertTriangle className="size-5 text-error shrink-0 mt-0.5" />
+        <div className="flex flex-col gap-1">
+          <p className="text-sm font-medium text-text-primary">
+            This action cannot be undone
+          </p>
+          <p className="text-sm text-text-secondary">
+            All your buildings, money, and progress will be permanently deleted.
+          </p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={handleReset}
+        disabled={isResetting}
+        className={cn(
+          'w-full py-3 px-4 rounded-lg font-medium text-sm',
+          'bg-error text-white',
+          'hover:bg-error/90 active:bg-error/80',
+          'disabled:opacity-50 disabled:cursor-not-allowed',
+          'transition-colors'
+        )}
+      >
+        {isResetting ? 'Resetting...' : 'Reset Everything'}
+      </button>
+    </div>
   )
 }
 
