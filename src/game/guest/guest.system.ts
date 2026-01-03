@@ -8,7 +8,6 @@ import { QueueComponent, Queue } from '../queue/queue.component'
 import { QueueAction } from '../queue/queue.action'
 import { Stat } from '@framework/stat/stat.component'
 import { StatAction } from '@framework/stat/stat.action'
-import { Modifier } from '@framework/modifier/modifier.component'
 
 @System('guest')
 export class GuestSystem {
@@ -59,7 +58,7 @@ export class GuestSystem {
     const def = Building.type(building)
     if (!def) return
 
-    const ticketPrice = Modifier.compute(building, 'ticketPrice', def.inputAmount)
+    const ticketPrice = Stat.getFinal(building, 'ticketPrice')
     if (!Guest.canAfford(entity, ticketPrice)) return
 
     const queueEntity = this.findQueueForBuilding(building)
