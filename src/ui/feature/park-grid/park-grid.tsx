@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { Entity } from '@ecs/entity'
 import { PlotAction } from '@game/plot/plot.action'
 import { PlotSlot } from './plot-slot'
@@ -8,15 +8,18 @@ const PLOT_COUNT = GRID_SIZE * GRID_SIZE
 
 export function ParkGrid() {
   const [plots, setPlots] = useState<Entity[]>([])
+  const initialized = useRef(false)
 
   useEffect(() => {
-    if (plots.length > 0) return
+    if (initialized.current) return
+    initialized.current = true
+
     const entities: Entity[] = []
     for (let i = 0; i < PLOT_COUNT; i++) {
       entities.push(PlotAction.create())
     }
     setPlots(entities)
-  }, [plots.length])
+  }, [])
 
   return (
     <div className="p-4">
