@@ -16,7 +16,6 @@ export function useComponent<T extends ComponentData>(
 
       const handler = (e: Entity) => {
         if (e === entity) {
-          cacheRef.current.version++
           batchedUpdate()
         }
       }
@@ -37,12 +36,15 @@ export function useComponent<T extends ComponentData>(
     const data = ComponentRegistry.get(entity, schema)
     const cache = cacheRef.current
 
+    // Return same cache if data unchanged (reference equality)
     if (cache.data === data) {
       return cache
     }
 
-    cache.data = data
-    return cache
+    // Create NEW cache object when data changes - React compares by reference
+    const newCache = { version: cache.version + 1, data }
+    cacheRef.current = newCache
+    return newCache
   }, [entity, schema])
 
   const result = useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
