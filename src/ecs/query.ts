@@ -15,6 +15,7 @@ export class QueryManager {
   private static readonly queries = new Map<QueryId, QuerySchema>()
   private static readonly cache = new Map<QueryId, Set<Entity>>()
   private static readonly dirty = new Set<QueryId>()
+  private static readonly needsRebuild = new Set<QueryId>()
   private static readonly listeners = new Map<QueryId, Set<() => void>>()
 
   static create(withComponents: readonly ComponentId[], without?: readonly ComponentId[]): QuerySchema {
@@ -29,7 +30,7 @@ export class QueryManager {
     this.queries.set(id, schema)
     this.cache.set(id, new Set())
     this.listeners.set(id, new Set())
-    this.dirty.add(id)
+    this.needsRebuild.add(id)
     return schema
   }
 
@@ -68,6 +69,10 @@ export class QueryManager {
   }
 
   static get(schema: QuerySchema): ReadonlySet<Entity> {
+    if (this.needsRebuild.has(schema.id)) {
+      this.rebuild(schema)
+      this.needsRebuild.delete(schema.id)
+    }
     return this.cache.get(schema.id) ?? new Set()
   }
 
@@ -106,5 +111,8 @@ export class QueryManager {
   static clear(): void {
     this.cache.forEach(c => c.clear())
     this.dirty.clear()
+    for (const id of this.queries.keys()) {
+      this.needsRebuild.add(id)
+    }
   }
 }
