@@ -1,13 +1,16 @@
 import type { QuerySchema } from '@ecs/query'
 import { World } from '@ecs/world'
 import { System } from '@ecs/decorator'
-import { GuestComponent, Guest, GuestState } from './guest.component'
+import { GuestComponent, Guest, GuestState, GuestStat } from './guest.component'
 import { GuestAction } from './guest.action'
 import { BuildingComponent, Building } from '../building/building.component'
+import { BuildingAction } from '../building/building.action'
 import { QueueComponent, Queue } from '../queue/queue.component'
 import { QueueAction } from '../queue/queue.action'
 import { Stat } from '@framework/stat/stat.component'
 import { StatAction } from '@framework/stat/stat.action'
+
+const NEED_DECAY_RATE = 1
 
 @System('guest')
 export class GuestSystem {
@@ -58,18 +61,14 @@ export class GuestSystem {
     const def = Building.definition(building)
     if (!def) return
 
-    const ticketPrice = Stat.getFinal(building, 'ticketPrice')
-    if (!Guest.canAfford(entity, ticketPrice)) return
-
     const queueEntity = this.findQueueForBuilding(building)
     if (!queueEntity) return
 
     if (Queue.isFull(queueEntity)) return
 
-    if (GuestAction.pay({ entity, amount: ticketPrice, source: def.id })) {
-      QueueAction.join({ queueEntity, guestEntity: entity, source: 'guest-system' })
-      GuestAction.changeState({ entity, newState: GuestState.queuing, target: queueEntity, source: 'guest-system' })
-    }
+    BuildingAction.applyParkEffects(def.on.visit?.park, def.id)
+    QueueAction.join({ queueEntity, guestEntity: entity, source: 'guest-system' })
+    GuestAction.changeState({ entity, newState: GuestState.queuing, target: queueEntity, source: 'guest-system' })
   }
 
   private static processRidingGuest(entity: number, dt: number): void {
@@ -79,12 +78,20 @@ export class GuestSystem {
       if (target) {
         const def = Building.definition(target)
         if (def) {
-          for (const effect of def.output) {
-            StatAction.change({ entity, statId: effect.stat, delta: effect.amount, source: def.id })
-          }
+          BuildingAction.applyGuestEffects(entity, def.on.visit?.guest, def.id)
         }
       }
       GuestAction.changeState({ entity, newState: GuestState.idle, target: null, source: 'guest-system' })
+    }
+  }
+
+  private static decayNeeds(entity: number): void {
+    const needs = [GuestStat.hunger, GuestStat.thirst, GuestStat.energy, GuestStat.comfort] as const
+    for (const need of needs) {
+      const current = Stat.get(entity, need)
+      if (current > 0) {
+        StatAction.change({ entity, statId: need, delta: -NEED_DECAY_RATE, source: 'guest-system' })
+      }
     }
   }
 
@@ -103,7 +110,9 @@ export class GuestSystem {
           break
       }
 
-      const happiness = Stat.get(entity, 'happiness')
+      this.decayNeeds(entity)
+
+      const happiness = Stat.get(entity, GuestStat.happiness)
       if (happiness <= 0) {
         GuestAction.changeState({ entity, newState: GuestState.leaving, target: null, source: 'guest-system' })
       }

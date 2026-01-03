@@ -44,3 +44,23 @@ export function useWorldRunning(): boolean {
 
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
 }
+
+export function useTick<T>(getValue: () => T): T {
+  const valueRef = useRef<T>(getValue())
+
+  const subscribe = useCallback(
+    (onStoreChange: () => void) => {
+      const batchedUpdate = () => ReactBatch.schedule(onStoreChange)
+      const unsub = EventBus.on(EcsEvent.WORLD_TICK, () => {
+        valueRef.current = getValue()
+        batchedUpdate()
+      })
+      return unsub
+    },
+    [getValue]
+  )
+
+  const getSnapshot = useCallback(() => valueRef.current, [])
+
+  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
+}

@@ -8,9 +8,10 @@ export const EcsEvent = {
   COMPONENT_REMOVED: 'ecs:component:removed',
   WORLD_STARTED: 'ecs:world:started',
   WORLD_STOPPED: 'ecs:world:stopped',
+  WORLD_TICK: 'ecs:world:tick',
 } as const
 
-export type EcsEventType = typeof EcsEvent[keyof typeof EcsEvent]
+export type EcsEventType = (typeof EcsEvent)[keyof typeof EcsEvent]
 
 export type EcsEventPayload = {
   [EcsEvent.ENTITY_CREATED]: Entity
@@ -19,6 +20,7 @@ export type EcsEventPayload = {
   [EcsEvent.COMPONENT_REMOVED]: { entity: Entity; component: ComponentId }
   [EcsEvent.WORLD_STARTED]: null
   [EcsEvent.WORLD_STOPPED]: null
+  [EcsEvent.WORLD_TICK]: { dt: number }
 }
 
 export type Listener<T> = (data: T) => void

@@ -103,6 +103,7 @@ export class World {
     SystemManager.run(dt)
     QueryManager.flushDirty()
     EventBus.endBatch()
+    EventBus.emit(EcsEvent.WORLD_TICK, { dt })
   }
 
   static clear(): void {

@@ -1,21 +1,33 @@
 import { World } from '@ecs/world'
 import type { Entity } from '@ecs/entity'
 import type { ComponentSchema } from '@ecs/component'
-import type { StatEffect } from '@framework/stat/stat-effect'
 
 export const BuildingStat = {
   capacity: 'capacity',
   duration: 'duration',
-  ticketPrice: 'ticketPrice',
   excitement: 'excitement',
   intensity: 'intensity',
   nauseaRating: 'nauseaRating',
-  maintenanceCost: 'maintenanceCost',
 } as const
 
 export type BuildingStatId = (typeof BuildingStat)[keyof typeof BuildingStat]
 
 export type BuildingId = string
+
+export type BuildingCategory = 'ride' | 'facility' | 'shop'
+
+export type StatChanges = Record<string, number>
+
+export type BuildingEffects = {
+  park?: StatChanges
+  guest?: StatChanges
+}
+
+export type BuildingOn = {
+  build?: BuildingEffects
+  tick?: BuildingEffects
+  visit?: BuildingEffects
+}
 
 export type BuildingData = {
   id: BuildingId
@@ -37,10 +49,10 @@ export type BuildingDefinition = {
   id: BuildingId
   name: string
   icon?: string
-  input: StatEffect[]
-  output: StatEffect[]
+  category: BuildingCategory
   capacity: number
   duration: number
+  on: BuildingOn
 } & BuildingHooks
 
 export function defineBuilding<T extends BuildingDefinition>(def: T): T {
