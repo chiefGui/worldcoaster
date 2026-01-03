@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, type ReactNode } from 'react'
+import { forwardRef, useLayoutEffect, type ReactNode } from 'react'
 import * as Ariakit from '@ariakit/react'
 import { Sheet as SheetPrimitive, useSheetStore, type SheetStore } from '@ui/primitive/sheet'
 import { BackdropManager } from '@ui/primitive/backdrop'
@@ -12,7 +12,7 @@ export type SheetProps = {
 function Root({ children, store }: SheetProps) {
   const open = Ariakit.useStoreState(store, 'open')
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (open) {
       BackdropManager.show()
       return () => BackdropManager.hide()
