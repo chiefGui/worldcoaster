@@ -4,6 +4,7 @@ import { Header } from '@ui/feature/header/header'
 import { ParkGrid } from '@ui/feature/park-grid/park-grid'
 import { BuildingPicker } from '@ui/feature/building-picker/building-picker'
 import { Sheet } from '@ui/component/sheet'
+import { Backdrop } from '@ui/component/backdrop'
 
 export function GameLayout() {
   const [selectedPlot, setSelectedPlot] = useState<Entity | null>(null)
@@ -23,16 +24,18 @@ export function GameLayout() {
   }, [sheetStore])
 
   return (
-    <div className="min-h-screen bg-bg-primary flex flex-col">
-      <Header />
-      <main className="flex-1">
-        <ParkGrid onAddBuilding={handleAddBuilding} />
-      </main>
-      <Sheet.Root store={sheetStore}>
-        <Sheet.Content>
-          <BuildingPicker plotEntity={selectedPlot} onClose={handleClose} />
-        </Sheet.Content>
-      </Sheet.Root>
-    </div>
+    <Backdrop.Provider>
+      <div className="min-h-screen bg-bg-primary flex flex-col">
+        <Header />
+        <main className="flex-1">
+          <ParkGrid onAddBuilding={handleAddBuilding} />
+        </main>
+        <Sheet.Root store={sheetStore}>
+          <Sheet.Content>
+            <BuildingPicker plotEntity={selectedPlot} onClose={handleClose} />
+          </Sheet.Content>
+        </Sheet.Root>
+      </div>
+    </Backdrop.Provider>
   )
 }

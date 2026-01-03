@@ -1,6 +1,7 @@
-import { forwardRef, type ReactNode } from 'react'
+import { forwardRef, useEffect, type ReactNode } from 'react'
 import * as Ariakit from '@ariakit/react'
 import { Sheet as SheetPrimitive, useSheetStore, type SheetStore } from '@ui/primitive/sheet'
+import { BackdropManager } from '@ui/primitive/backdrop'
 import { cn } from '@ui/lib/cn'
 
 export type SheetProps = {
@@ -9,6 +10,15 @@ export type SheetProps = {
 }
 
 function Root({ children, store }: SheetProps) {
+  const open = Ariakit.useStoreState(store, 'open')
+
+  useEffect(() => {
+    if (open) {
+      BackdropManager.show()
+      return () => BackdropManager.hide()
+    }
+  }, [open])
+
   return <SheetPrimitive.Root store={store}>{children}</SheetPrimitive.Root>
 }
 
@@ -46,15 +56,7 @@ const Content = forwardRef<HTMLDivElement, SheetContentProps>(
           'data-[enter]:animate-sheet-up data-[leave]:animate-sheet-down',
           className
         )}
-        backdrop={
-          <div
-            className={cn(
-              'fixed inset-0 z-40 bg-black/60 backdrop-blur-sm',
-              'transition-opacity duration-200',
-              'data-[enter]:animate-fade-in data-[leave]:animate-fade-out'
-            )}
-          />
-        }
+        backdrop={false}
         {...props}
       >
         <div className="mx-auto w-12 h-1.5 bg-bg-tertiary rounded-full mt-3 mb-2" />
