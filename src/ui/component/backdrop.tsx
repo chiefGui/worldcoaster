@@ -11,7 +11,9 @@ export function BackdropProvider({ children }: BackdropProviderProps) {
     <BackdropPrimitive.Provider
       className={cn(
         'fixed inset-0 z-40 bg-black/60 backdrop-blur-sm',
-        'animate-fade-in'
+        'transition-opacity duration-200',
+        'opacity-0 pointer-events-none',
+        'data-[visible]:opacity-100 data-[visible]:pointer-events-auto'
       )}
     >
       {children}
