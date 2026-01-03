@@ -34,4 +34,16 @@ export class EntityManager {
     this.freeList.length = 0
     this.alive.clear()
   }
+
+  static restore(entity: Entity): void {
+    this.alive.add(entity)
+    if (entity >= this.nextId) {
+      this.nextId = entity + 1
+    }
+    // Remove from freeList if present
+    const idx = this.freeList.indexOf(entity)
+    if (idx !== -1) {
+      this.freeList.splice(idx, 1)
+    }
+  }
 }
