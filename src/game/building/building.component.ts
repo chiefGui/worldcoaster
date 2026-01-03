@@ -1,11 +1,11 @@
 import { World } from '@ecs/world'
 import type { Entity } from '@ecs/entity'
 import type { ComponentSchema } from '@ecs/component'
+import type { StatEffect } from '@framework/stat/stat-effect'
 
-// Building stats - colocated with domain
 export const BuildingStat = {
   capacity: 'capacity',
-  rideDuration: 'rideDuration',
+  duration: 'duration',
   ticketPrice: 'ticketPrice',
   excitement: 'excitement',
   intensity: 'intensity',
@@ -13,12 +13,12 @@ export const BuildingStat = {
   maintenanceCost: 'maintenanceCost',
 } as const
 
-export type BuildingStatId = typeof BuildingStat[keyof typeof BuildingStat]
+export type BuildingStatId = (typeof BuildingStat)[keyof typeof BuildingStat]
 
-export type BuildingTypeId = string
+export type BuildingId = string
 
 export type BuildingData = {
-  typeId: BuildingTypeId
+  id: BuildingId
   plotEntity: Entity
 }
 
@@ -26,30 +26,39 @@ export const BuildingComponent: ComponentSchema<BuildingData> = World.registerCo
   'Building'
 )
 
-export type BuildingTypeDefinition = {
-  id: BuildingTypeId
+export type BuildingHooks = {
+  onBuild?: (entity: Entity) => void
+  onDestroy?: (entity: Entity) => void
+  onGuestEnter?: (buildingEntity: Entity, guestEntity: Entity) => void
+  onGuestExit?: (buildingEntity: Entity, guestEntity: Entity) => void
+}
+
+export type BuildingDefinition = {
+  id: BuildingId
   name: string
-  inputStat: string
-  inputAmount: number
-  outputStat: string
-  outputAmount: number
+  input: StatEffect[]
+  output: StatEffect[]
   capacity: number
-  rideDuration: number
+  duration: number
+} & BuildingHooks
+
+export function defineBuilding<T extends BuildingDefinition>(def: T): T {
+  return def
 }
 
 export class BuildingRegistry {
-  private static readonly types = new Map<BuildingTypeId, BuildingTypeDefinition>()
+  private static readonly definitions = new Map<BuildingId, BuildingDefinition>()
 
-  static register(def: BuildingTypeDefinition): void {
-    this.types.set(def.id, def)
+  static register(def: BuildingDefinition): void {
+    this.definitions.set(def.id, def)
   }
 
-  static get(typeId: BuildingTypeId): BuildingTypeDefinition | undefined {
-    return this.types.get(typeId)
+  static get(id: BuildingId): BuildingDefinition | undefined {
+    return this.definitions.get(id)
   }
 
-  static all(): readonly BuildingTypeDefinition[] {
-    return Array.from(this.types.values())
+  static all(): readonly BuildingDefinition[] {
+    return Array.from(this.definitions.values())
   }
 }
 
@@ -58,14 +67,14 @@ export class Building {
     return World.get(entity, BuildingComponent)
   }
 
-  static typeId(entity: Entity): BuildingTypeId | undefined {
+  static id(entity: Entity): BuildingId | undefined {
     const building = World.get(entity, BuildingComponent)
-    return building?.typeId
+    return building?.id
   }
 
-  static type(entity: Entity): BuildingTypeDefinition | undefined {
+  static definition(entity: Entity): BuildingDefinition | undefined {
     const building = World.get(entity, BuildingComponent)
-    return building ? BuildingRegistry.get(building.typeId) : undefined
+    return building ? BuildingRegistry.get(building.id) : undefined
   }
 
   static plot(entity: Entity): Entity | undefined {
@@ -73,14 +82,3 @@ export class Building {
     return building?.plotEntity
   }
 }
-
-BuildingRegistry.register({
-  id: 'carousel',
-  name: 'Carousel',
-  inputStat: 'money',
-  inputAmount: 5,
-  outputStat: 'happiness',
-  outputAmount: 10,
-  capacity: 12,
-  rideDuration: 3,
-})

@@ -55,7 +55,7 @@ export class GuestSystem {
     const building = this.findRandomBuilding()
     if (!building) return
 
-    const def = Building.type(building)
+    const def = Building.definition(building)
     if (!def) return
 
     const ticketPrice = Stat.getFinal(building, 'ticketPrice')
@@ -77,9 +77,11 @@ export class GuestSystem {
     if (finished) {
       const target = Guest.target(entity)
       if (target) {
-        const def = Building.type(target)
+        const def = Building.definition(target)
         if (def) {
-          StatAction.change({ entity, statId: def.outputStat, delta: def.outputAmount, source: def.id })
+          for (const effect of def.output) {
+            StatAction.change({ entity, statId: effect.stat, delta: effect.amount, source: def.id })
+          }
         }
       }
       GuestAction.changeState({ entity, newState: GuestState.idle, target: null, source: 'guest-system' })

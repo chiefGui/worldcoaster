@@ -10,11 +10,11 @@ type BuildingDisplayProps = {
 
 function BuildingDisplay({ entity }: BuildingDisplayProps) {
   const building = useComponent(entity, BuildingComponent)
-  const buildingType = building ? BuildingRegistry.get(building.typeId) : null
+  const buildingDef = building ? BuildingRegistry.get(building.id) : null
 
   return (
     <span className="text-xs text-text-secondary text-center px-1">
-      {buildingType?.name ?? 'Building'}
+      {buildingDef?.name ?? 'Building'}
     </span>
   )
 }

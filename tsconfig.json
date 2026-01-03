@@ -21,7 +21,8 @@
       "@ecs/*": ["./src/ecs/*"],
       "@framework/*": ["./src/framework/*"],
       "@game/*": ["./src/game/*"],
-      "@ui/*": ["./src/ui/*"]
+      "@ui/*": ["./src/ui/*"],
+      "@content/*": ["./src/content/*"]
     },
     "baseUrl": "."
   },
