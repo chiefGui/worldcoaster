@@ -1,5 +1,4 @@
 import type { Entity } from '../entity'
-import type { ComponentId } from '../component'
 import { EntityManager } from '../entity'
 import { ComponentRegistry } from '../component'
 import { Tag } from '../tag'
@@ -7,7 +6,7 @@ import { GameTime } from '../../framework/time'
 
 export type SerializedEntity = {
   id: Entity
-  components: Record<ComponentId, unknown>
+  components: Record<string, unknown>
 }
 
 export type SerializedWorld = {
@@ -19,17 +18,19 @@ export type SerializedWorld = {
 }
 
 export class WorldSerializer {
-  private static readonly VERSION = 1
+  private static readonly VERSION = 2
 
   static serialize(): SerializedWorld {
     const entities: SerializedEntity[] = []
     for (const entity of EntityManager.all()) {
       const mask = ComponentRegistry.getMask(entity)
-      const components: Record<number, unknown> = {}
+      const components: Record<string, unknown> = {}
       for (const componentId of mask) {
-        const data = ComponentRegistry.getAll({ id: componentId, name: '' }).get(entity)
+        const schema = ComponentRegistry.getSchema(componentId)
+        if (!schema) continue
+        const data = ComponentRegistry.getAll(schema).get(entity)
         if (data !== undefined) {
-          components[componentId] = data
+          components[schema.name] = data
         }
       }
       entities.push({ id: entity, components })
@@ -44,14 +45,15 @@ export class WorldSerializer {
   }
 
   static deserialize(data: SerializedWorld): void {
-    if (data.version !== this.VERSION) {
-      console.warn(`Save version mismatch: ${data.version} vs ${this.VERSION}`)
-    }
     for (const serialized of data.entities) {
       EntityManager.restore(serialized.id)
-      for (const [componentIdStr, componentData] of Object.entries(serialized.components)) {
-        const componentId = Number(componentIdStr)
-        ComponentRegistry.add(serialized.id, { id: componentId, name: '' }, componentData as Record<string, unknown>)
+      for (const [componentName, componentData] of Object.entries(serialized.components)) {
+        const schema = ComponentRegistry.getSchemaByName(componentName)
+        if (!schema) {
+          console.warn(`Unknown component "${componentName}" in save, skipping`)
+          continue
+        }
+        ComponentRegistry.add(serialized.id, schema, componentData as Record<string, unknown>)
       }
     }
     if (data.tags) {
