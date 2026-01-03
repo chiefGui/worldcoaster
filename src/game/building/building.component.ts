@@ -4,13 +4,13 @@ import type { ComponentSchema } from '@ecs/component'
 
 // Building stats - colocated with domain
 export const BuildingStat = {
-  CAPACITY: 'capacity',
-  RIDE_DURATION: 'rideDuration',
-  TICKET_PRICE: 'ticketPrice',
-  EXCITEMENT: 'excitement',
-  INTENSITY: 'intensity',
-  NAUSEA_RATING: 'nauseaRating',
-  MAINTENANCE_COST: 'maintenanceCost',
+  capacity: 'capacity',
+  rideDuration: 'rideDuration',
+  ticketPrice: 'ticketPrice',
+  excitement: 'excitement',
+  intensity: 'intensity',
+  nauseaRating: 'nauseaRating',
+  maintenanceCost: 'maintenanceCost',
 } as const
 
 export type BuildingStatId = typeof BuildingStat[keyof typeof BuildingStat]

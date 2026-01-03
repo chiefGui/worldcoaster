@@ -3,14 +3,14 @@ import type { Entity } from '@ecs/entity'
 import type { ComponentSchema } from '@ecs/component'
 import { Stat } from '@framework/stat/stat.component'
 
-// Guest stats - colocated with domain
+// Guest stats - symmetrical keys (key === value)
 export const GuestStat = {
-  MONEY: 'money',
-  HAPPINESS: 'happiness',
-  HUNGER: 'hunger',
-  THIRST: 'thirst',
-  ENERGY: 'energy',
-  NAUSEA: 'nausea',
+  money: 'money',
+  happiness: 'happiness',
+  hunger: 'hunger',
+  thirst: 'thirst',
+  energy: 'energy',
+  nausea: 'nausea',
 } as const
 
 export type GuestStatId = typeof GuestStat[keyof typeof GuestStat]
@@ -49,6 +49,6 @@ export class Guest {
   }
 
   static canAfford(entity: Entity, amount: number): boolean {
-    return Stat.get(entity, GuestStat.MONEY) >= amount
+    return Stat.get(entity, GuestStat.money) >= amount
   }
 }

@@ -101,18 +101,18 @@ const guests = World.query(guestQuery)
 Numeric values on entities, tracked through the effect pipeline. Stat IDs are colocated with their domains.
 
 ```typescript
-// guest.component.ts - Stats colocated with domain
+// guest.component.ts - Stats colocated with domain (symmetrical: key === value)
 export const GuestStat = {
-  MONEY: 'money',
-  HAPPINESS: 'happiness',
-  HUNGER: 'hunger',
+  money: 'money',
+  happiness: 'happiness',
+  hunger: 'hunger',
 } as const
 
 // building.component.ts
 export const BuildingStat = {
-  CAPACITY: 'capacity',
-  RIDE_DURATION: 'rideDuration',
-  TICKET_PRICE: 'ticketPrice',
+  capacity: 'capacity',
+  rideDuration: 'rideDuration',
+  ticketPrice: 'ticketPrice',
 } as const
 ```
 
@@ -125,26 +125,26 @@ import { GuestStat } from '@game/guest/guest.component'
 World.add(entity, StatComponent, { values: {} })
 
 // Read base value
-const money = Stat.get(entity, GuestStat.MONEY)
+const money = Stat.get(entity, GuestStat.money)
 
 // Read final value (with modifiers applied)
 const speed = Stat.getFinal(entity, 'speed')
 
 // Write (goes through EffectProcessor)
-StatAction.set({ entity, statId: GuestStat.MONEY, value: 100, source: 'spawn' })
-StatAction.change({ entity, statId: GuestStat.HAPPINESS, delta: 10, source: 'ride' })
+StatAction.set({ entity, statId: GuestStat.money, value: 100, source: 'spawn' })
+StatAction.change({ entity, statId: GuestStat.happiness, delta: 10, source: 'ride' })
 ```
 
 ### Modifiers
 Modifiers are entities that affect stat computation. Supports phases, stacking, duration, conditions.
 
 ```typescript
-// modifier.component.ts - Tags colocated with modifier system
+// modifier.component.ts - Tags colocated with modifier system (symmetrical)
 export const ModifierTag = {
-  BUFF: 'buff',
-  DEBUFF: 'debuff',
-  CONSUMABLE: 'consumable',
-  PERMANENT: 'permanent',
+  buff: 'buff',
+  debuff: 'debuff',
+  consumable: 'consumable',
+  permanent: 'permanent',
 } as const
 ```
 
@@ -159,7 +159,7 @@ const modEntity = ModifierAction.apply({
   phase: 'percent_add',      // See phases below
   value: 0.25,               // +25%
   source: 'coffee-buff',
-  tags: [ModifierTag.BUFF, ModifierTag.CONSUMABLE],
+  tags: [ModifierTag.buff, ModifierTag.consumable],
   duration: 30,              // Optional: expires after 30s
   stacking: {                // Optional: stacking behavior
     max: 3,

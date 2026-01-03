@@ -6,21 +6,21 @@ import type { StatId } from '../stat/stat.component'
 // Modifier tags - for categorization and bulk operations
 export const ModifierTag = {
   // Effect types
-  BUFF: 'buff',
-  DEBUFF: 'debuff',
-  NEUTRAL: 'neutral',
+  buff: 'buff',
+  debuff: 'debuff',
+  neutral: 'neutral',
 
   // Sources
-  CONSUMABLE: 'consumable',
-  EQUIPMENT: 'equipment',
-  ENVIRONMENT: 'environment',
-  WEATHER: 'weather',
-  EVENT: 'event',
+  consumable: 'consumable',
+  equipment: 'equipment',
+  environment: 'environment',
+  weather: 'weather',
+  event: 'event',
 
   // Removal categories
-  CLEANSABLE: 'cleansable',
-  PERMANENT: 'permanent',
-  TRANSFERABLE: 'transferable',
+  cleansable: 'cleansable',
+  permanent: 'permanent',
+  transferable: 'transferable',
 } as const
 
 export type ModifierTagId = typeof ModifierTag[keyof typeof ModifierTag]
