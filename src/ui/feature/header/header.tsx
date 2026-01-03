@@ -1,7 +1,9 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useQuery } from '@ecs/react/use-query'
+import { useComponent } from '@ecs/react/use-component'
 import { GuestComponent } from '@game/guest/guest.component'
-import { Park } from '@game/park'
+import { Park, ParkStat } from '@game/park'
+import { StatComponent } from '@framework/stat/stat.component'
 import { HamburgerMenu } from '@ui/feature/hamburger-menu'
 import { Format } from '@ui/lib/format'
 
@@ -9,25 +11,9 @@ export function Header() {
   const schemas = useMemo(() => [GuestComponent] as const, [])
   const guests = useQuery(schemas)
 
-  // Bypass useTick - poll directly to debug
-  const [money, setMoney] = useState(() => {
-    try {
-      return Park.money()
-    } catch {
-      return 0
-    }
-  })
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      try {
-        setMoney(Park.money())
-      } catch {
-        setMoney(0)
-      }
-    }, 100)
-    return () => clearInterval(interval)
-  }, [])
+  // Subscribe to stat changes on park entity
+  const stats = useComponent(Park.entity(), StatComponent)
+  const money = stats?.values[ParkStat.money] ?? 0
 
   return (
     <header className="flex items-center gap-3 px-2 py-2 bg-bg-secondary border-b border-border">

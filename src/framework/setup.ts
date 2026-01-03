@@ -1,10 +1,11 @@
 import { World } from '@ecs/world'
 import { SystemRegistry } from '@ecs/decorator'
+import { ComponentRegistry } from '@ecs/component'
 import { TimeSystem } from './system'
 import { ModifierSystem } from './modifier/modifier.system'
 import { GuestSystem } from '@game/guest/guest.system'
 import { QueueSystem } from '@game/queue/queue.system'
-import { ParkAction } from '@game/park'
+import { Park, ParkComponent, ParkAction } from '@game/park'
 import { EffectProcessor } from './effect'
 import { GameTime } from './time'
 import { Modifier } from './modifier/modifier.component'
@@ -25,9 +26,23 @@ export class Game {
 
   static async start(): Promise<void> {
     this.init()
-    await Persistence.load()
+    const loaded = await Persistence.load()
+    if (loaded) {
+      // World was cleared and restored - need to find park entity reference
+      this.restoreParkReference()
+    }
     World.start()
     Persistence.startAutoSave()
+  }
+
+  private static restoreParkReference(): void {
+    const parks = ComponentRegistry.getAll(ParkComponent)
+    for (const [entity] of parks) {
+      Park.setEntity(entity)
+      return
+    }
+    // No park in saved data, create fresh one
+    ParkAction.init()
   }
 
   static stop(): void {
