@@ -1,10 +1,8 @@
 import type { Entity } from '@ecs/entity'
 import { World } from '@ecs/world'
 import { EffectProcessor } from '@framework/effect'
-import { StatComponent } from '@framework/stat/stat.component'
+import { StatComponent, Stat } from '@framework/stat/stat.component'
 import { StatAction } from '@framework/stat/stat.action'
-import { ModifierComponent } from '@framework/modifier/modifier.component'
-import { Stat } from '@framework/stat/stat.component'
 import { GuestComponent, type GuestState } from './guest.component'
 
 export type SpawnGuestParams = {
@@ -41,7 +39,6 @@ export class GuestAction {
       rideTimeRemaining: 0,
     })
     World.add(entity, StatComponent, { values: {} })
-    World.add(entity, ModifierComponent, { modifiers: [] })
 
     const effect = EffectProcessor.process<{ initialMoney: number }>({
       type: 'entity:spawn',

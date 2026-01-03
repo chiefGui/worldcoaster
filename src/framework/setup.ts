@@ -1,6 +1,7 @@
 import { World } from '@ecs/world'
 import { SystemRegistry } from '@ecs/decorator'
 import { TimeSystem } from './system'
+import { ModifierSystem } from './modifier/modifier.system'
 import { GuestSystem } from '@game/guest/guest.system'
 import { QueueSystem } from '@game/queue/queue.system'
 import { EffectProcessor } from './effect'
@@ -14,7 +15,7 @@ export class Game {
     if (this.initialized) return
     this.initialized = true
 
-    SystemRegistry.registerAll(TimeSystem, GuestSystem, QueueSystem)
+    SystemRegistry.registerAll(TimeSystem, ModifierSystem, GuestSystem, QueueSystem)
   }
 
   static start(): void {
