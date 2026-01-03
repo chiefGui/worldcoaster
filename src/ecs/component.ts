@@ -49,19 +49,23 @@ export class ComponentRegistry {
   }
 
   static add<T extends ComponentData>(entity: Entity, schema: ComponentSchema<T>, data: T): void {
-    const store = this.storage.get(schema.id)!
+    let store = this.storage.get(schema.id)
+    if (!store) {
+      store = new Map()
+      this.storage.set(schema.id, store)
+    }
     store.set(entity, data)
     if (!this.entityMasks.has(entity)) {
       this.entityMasks.set(entity, new Set())
     }
     this.entityMasks.get(entity)!.add(schema.id)
-    this.onAdd.get(schema.id)!.forEach(fn => fn(entity))
+    this.onAdd.get(schema.id)?.forEach(fn => fn(entity))
   }
 
   static remove(entity: Entity, schema: ComponentSchema): void {
     const store = this.storage.get(schema.id)
     if (!store?.has(entity)) return
-    this.onRemove.get(schema.id)!.forEach(fn => fn(entity))
+    this.onRemove.get(schema.id)?.forEach(fn => fn(entity))
     store.delete(entity)
     this.entityMasks.get(entity)?.delete(schema.id)
   }
@@ -83,25 +87,40 @@ export class ComponentRegistry {
   }
 
   static subscribeAdd(schema: ComponentSchema, fn: (entity: Entity) => void): () => void {
-    this.onAdd.get(schema.id)!.add(fn)
-    return () => this.onAdd.get(schema.id)!.delete(fn)
+    let set = this.onAdd.get(schema.id)
+    if (!set) {
+      set = new Set()
+      this.onAdd.set(schema.id, set)
+    }
+    set.add(fn)
+    return () => this.onAdd.get(schema.id)?.delete(fn)
   }
 
   static subscribeRemove(schema: ComponentSchema, fn: (entity: Entity) => void): () => void {
-    this.onRemove.get(schema.id)!.add(fn)
-    return () => this.onRemove.get(schema.id)!.delete(fn)
+    let set = this.onRemove.get(schema.id)
+    if (!set) {
+      set = new Set()
+      this.onRemove.set(schema.id, set)
+    }
+    set.add(fn)
+    return () => this.onRemove.get(schema.id)?.delete(fn)
   }
 
   static subscribeChange(schema: ComponentSchema, fn: (entity: Entity) => void): () => void {
-    this.onChange.get(schema.id)!.add(fn)
-    return () => this.onChange.get(schema.id)!.delete(fn)
+    let set = this.onChange.get(schema.id)
+    if (!set) {
+      set = new Set()
+      this.onChange.set(schema.id, set)
+    }
+    set.add(fn)
+    return () => this.onChange.get(schema.id)?.delete(fn)
   }
 
   static set<T extends ComponentData>(entity: Entity, schema: ComponentSchema<T>, data: T): void {
-    const store = this.storage.get(schema.id)!
-    if (!store.has(entity)) return
+    const store = this.storage.get(schema.id)
+    if (!store?.has(entity)) return
     store.set(entity, data)
-    this.onChange.get(schema.id)!.forEach(fn => fn(entity))
+    this.onChange.get(schema.id)?.forEach(fn => fn(entity))
   }
 
   static notifyChange(entity: Entity, schema: ComponentSchema): void {

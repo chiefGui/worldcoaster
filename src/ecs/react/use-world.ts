@@ -1,66 +1,47 @@
-import { useSyncExternalStore, useCallback, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { EventBus, EcsEvent } from '../event'
 import { World } from '../world'
-import { ReactBatch } from './batch'
 
 export function useEntityCount(): number {
-  const countRef = useRef(World.entityCount())
+  const [count, setCount] = useState(World.entityCount())
 
-  const subscribe = useCallback((onStoreChange: () => void) => {
-    const batchedUpdate = () => ReactBatch.schedule(onStoreChange)
-
-    const unsubCreate = EventBus.on(EcsEvent.ENTITY_CREATED, () => {
-      countRef.current = World.entityCount()
-      batchedUpdate()
-    })
-    const unsubDestroy = EventBus.on(EcsEvent.ENTITY_DESTROYED, () => {
-      countRef.current = World.entityCount()
-      batchedUpdate()
-    })
-    return () => {
-      unsubCreate()
-      unsubDestroy()
-    }
-  }, [])
-
-  const getSnapshot = useCallback(() => World.entityCount(), [])
-
-  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
-}
-
-export function useWorldRunning(): boolean {
-  const subscribe = useCallback((onStoreChange: () => void) => {
-    const batchedUpdate = () => ReactBatch.schedule(onStoreChange)
-
-    const unsub1 = EventBus.on(EcsEvent.WORLD_STARTED, batchedUpdate)
-    const unsub2 = EventBus.on(EcsEvent.WORLD_STOPPED, batchedUpdate)
+  useEffect(() => {
+    const update = () => setCount(World.entityCount())
+    const unsub1 = EventBus.on(EcsEvent.ENTITY_CREATED, update)
+    const unsub2 = EventBus.on(EcsEvent.ENTITY_DESTROYED, update)
     return () => {
       unsub1()
       unsub2()
     }
   }, [])
 
-  const getSnapshot = useCallback(() => World.isRunning(), [])
+  return count
+}
 
-  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
+export function useWorldRunning(): boolean {
+  const [running, setRunning] = useState(World.isRunning())
+
+  useEffect(() => {
+    const unsub1 = EventBus.on(EcsEvent.WORLD_STARTED, () => setRunning(true))
+    const unsub2 = EventBus.on(EcsEvent.WORLD_STOPPED, () => setRunning(false))
+    return () => {
+      unsub1()
+      unsub2()
+    }
+  }, [])
+
+  return running
 }
 
 export function useTick<T>(getValue: () => T): T {
-  const valueRef = useRef<T>(getValue())
+  const [value, setValue] = useState<T>(getValue)
 
-  const subscribe = useCallback(
-    (onStoreChange: () => void) => {
-      const batchedUpdate = () => ReactBatch.schedule(onStoreChange)
-      const unsub = EventBus.on(EcsEvent.WORLD_TICK, () => {
-        valueRef.current = getValue()
-        batchedUpdate()
-      })
-      return unsub
-    },
-    [getValue]
-  )
+  useEffect(() => {
+    const unsub = EventBus.on(EcsEvent.WORLD_TICK, () => {
+      setValue(getValue())
+    })
+    return unsub
+  }, [getValue])
 
-  const getSnapshot = useCallback(() => valueRef.current, [])
-
-  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
+  return value
 }
