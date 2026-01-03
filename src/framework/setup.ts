@@ -8,6 +8,7 @@ import { EffectProcessor } from './effect'
 import { GameTime } from './time'
 import { Modifier } from './modifier/modifier.component'
 import { registerBuildings } from '@content/building'
+import { Persistence } from '@ecs/persistence/persistence'
 
 export class Game {
   private static initialized = false
@@ -20,12 +21,16 @@ export class Game {
     SystemRegistry.registerAll(TimeSystem, ModifierSystem, GuestSystem, QueueSystem)
   }
 
-  static start(): void {
+  static async start(): Promise<void> {
     this.init()
+    await Persistence.load()
     World.start()
+    Persistence.startAutoSave()
   }
 
   static stop(): void {
+    Persistence.stopAutoSave()
+    Persistence.save().catch(console.error)
     World.stop()
   }
 

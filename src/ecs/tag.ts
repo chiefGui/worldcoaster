@@ -81,4 +81,21 @@ export class Tag {
     entityTags.clear()
     tagEntities.clear()
   }
+
+  static serialize(): Record<string, string[]> {
+    const result: Record<string, string[]> = {}
+    for (const [entity, tags] of entityTags) {
+      result[String(entity)] = Array.from(tags)
+    }
+    return result
+  }
+
+  static deserialize(data: Record<string, string[]>): void {
+    for (const [entityStr, tags] of Object.entries(data)) {
+      const entity = Number(entityStr)
+      for (const tag of tags) {
+        this.add(entity, tag)
+      }
+    }
+  }
 }

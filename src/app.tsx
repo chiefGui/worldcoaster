@@ -28,7 +28,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryStat
 
 export default function App() {
   useEffect(() => {
-    Game.start()
+    void Game.start()
     return () => Game.stop()
   }, [])
 

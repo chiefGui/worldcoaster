@@ -46,4 +46,14 @@ export class GameTime {
     this.day = 1
     this.paused = false
   }
+
+  static getState(): { elapsed: number; day: number; paused: boolean } {
+    return { elapsed: this.elapsed, day: this.day, paused: this.paused }
+  }
+
+  static setState(state: { elapsed: number; day: number; paused: boolean }): void {
+    this.elapsed = state.elapsed
+    this.day = state.day
+    this.paused = state.paused
+  }
 }

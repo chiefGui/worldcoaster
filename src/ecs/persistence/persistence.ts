@@ -1,6 +1,7 @@
 import { Database } from './database'
 import { WorldSerializer } from './serializer'
 import { World } from '../world'
+import { Tag } from '../tag'
 
 export class Persistence {
   private static autoSaveInterval: number | null = null
@@ -15,6 +16,7 @@ export class Persistence {
     const data = await Database.load(slot)
     if (!data) return false
     World.clear()
+    Tag.clear()
     WorldSerializer.deserialize(data)
     return true
   }

@@ -2,6 +2,8 @@ import type { Entity } from '../entity'
 import type { ComponentId } from '../component'
 import { EntityManager } from '../entity'
 import { ComponentRegistry } from '../component'
+import { Tag } from '../tag'
+import { GameTime } from '../../framework/time'
 
 export type SerializedEntity = {
   id: Entity
@@ -12,6 +14,8 @@ export type SerializedWorld = {
   version: number
   timestamp: number
   entities: SerializedEntity[]
+  tags: Record<string, string[]>
+  gameTime: { elapsed: number; day: number; paused: boolean }
 }
 
 export class WorldSerializer {
@@ -34,6 +38,8 @@ export class WorldSerializer {
       version: this.VERSION,
       timestamp: Date.now(),
       entities,
+      tags: Tag.serialize(),
+      gameTime: GameTime.getState(),
     }
   }
 
@@ -42,14 +48,17 @@ export class WorldSerializer {
       console.warn(`Save version mismatch: ${data.version} vs ${this.VERSION}`)
     }
     for (const serialized of data.entities) {
-      const entity = EntityManager.create()
-      if (entity !== serialized.id) {
-        console.warn(`Entity ID mismatch during load: ${entity} vs ${serialized.id}`)
-      }
+      EntityManager.restore(serialized.id)
       for (const [componentIdStr, componentData] of Object.entries(serialized.components)) {
         const componentId = Number(componentIdStr)
-        ComponentRegistry.add(entity, { id: componentId, name: '' }, componentData as Record<string, unknown>)
+        ComponentRegistry.add(serialized.id, { id: componentId, name: '' }, componentData as Record<string, unknown>)
       }
+    }
+    if (data.tags) {
+      Tag.deserialize(data.tags)
+    }
+    if (data.gameTime) {
+      GameTime.setState(data.gameTime)
     }
   }
 }
