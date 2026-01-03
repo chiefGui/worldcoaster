@@ -13,6 +13,7 @@
     "@ariakit/react": "^0.4.20",
     "clsx": "^2.1.1",
     "idb": "^8.0.1",
+    "lucide-react": "^0.562.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwind-merge": "^3.4.0",
