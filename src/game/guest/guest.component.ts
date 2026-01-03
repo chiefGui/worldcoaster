@@ -2,19 +2,17 @@ import { World } from '@ecs/world'
 import { Tag } from '@ecs/tag'
 import type { Entity } from '@ecs/entity'
 import type { ComponentSchema } from '@ecs/component'
-import { Stat } from '@framework/stat/stat.component'
 
 // Guest stats - symmetrical keys (key === value)
 export const GuestStat = {
-  money: 'money',
   happiness: 'happiness',
   hunger: 'hunger',
   thirst: 'thirst',
   energy: 'energy',
-  nausea: 'nausea',
+  comfort: 'comfort',
 } as const
 
-export type GuestStatId = typeof GuestStat[keyof typeof GuestStat]
+export type GuestStatId = (typeof GuestStat)[keyof typeof GuestStat]
 
 // Guest state tags - mutually exclusive
 export const GuestState = {
@@ -25,9 +23,20 @@ export const GuestState = {
   leaving: 'guest:leaving',
 } as const
 
-export type GuestStateId = typeof GuestState[keyof typeof GuestState]
+export type GuestStateId = (typeof GuestState)[keyof typeof GuestState]
+
+// Guest archetype tags
+export const GuestArchetype = {
+  thrillSeeker: 'guest:thrill-seeker',
+  bigSpender: 'guest:big-spender',
+  casual: 'guest:casual',
+  family: 'guest:family',
+} as const
+
+export type GuestArchetypeId = (typeof GuestArchetype)[keyof typeof GuestArchetype]
 
 const ALL_GUEST_STATES = Object.values(GuestState)
+const ALL_GUEST_ARCHETYPES = Object.values(GuestArchetype)
 
 export type GuestData = {
   targetEntity: Entity | null
@@ -59,15 +68,22 @@ export class Guest {
     Tag.set(entity, state, ALL_GUEST_STATES)
   }
 
+  static archetype(entity: Entity): GuestArchetypeId | null {
+    for (const archetype of ALL_GUEST_ARCHETYPES) {
+      if (Tag.has(entity, archetype)) return archetype
+    }
+    return null
+  }
+
+  static setArchetype(entity: Entity, archetype: GuestArchetypeId): void {
+    Tag.set(entity, archetype, ALL_GUEST_ARCHETYPES)
+  }
+
   static target(entity: Entity): Entity | null {
     return World.get(entity, GuestComponent)?.targetEntity ?? null
   }
 
   static rideTimeRemaining(entity: Entity): number {
     return World.get(entity, GuestComponent)?.rideTimeRemaining ?? 0
-  }
-
-  static canAfford(entity: Entity, amount: number): boolean {
-    return Stat.get(entity, GuestStat.money) >= amount
   }
 }

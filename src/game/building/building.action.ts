@@ -2,8 +2,15 @@ import type { Entity } from '@ecs/entity'
 import { World } from '@ecs/world'
 import { StatComponent } from '@framework/stat/stat.component'
 import { StatAction } from '@framework/stat/stat.action'
-import { StatEffectUtil } from '@framework/stat/stat-effect'
-import { BuildingComponent, BuildingRegistry, type BuildingId } from './building.component'
+import { Park } from '@game/park'
+import { ParkAction } from '@game/park'
+import {
+  BuildingComponent,
+  BuildingRegistry,
+  type BuildingId,
+  type BuildingDefinition,
+  type StatChanges,
+} from './building.component'
 import { PlotComponent } from '../plot/plot.component'
 import { QueueComponent } from '../queue/queue.component'
 
@@ -21,6 +28,9 @@ export class BuildingAction {
     const plot = World.get(plotEntity, PlotComponent)
     if (!plot || plot.buildingEntity !== null) return null
 
+    const buildCost = this.getBuildCost(def)
+    if (!Park.canAfford(buildCost)) return null
+
     const entity = World.spawn()
     World.add(entity, BuildingComponent, { id: buildingId, plotEntity })
     World.add(entity, StatComponent, { values: {} })
@@ -28,10 +38,7 @@ export class BuildingAction {
     StatAction.set({ entity, statId: 'capacity', value: def.capacity, source })
     StatAction.set({ entity, statId: 'duration', value: def.duration, source })
 
-    const moneyInput = StatEffectUtil.find(def.input, 'money')
-    if (moneyInput) {
-      StatAction.set({ entity, statId: 'ticketPrice', value: moneyInput.amount, source })
-    }
+    this.applyParkEffects(def.on.build?.park, source)
 
     plot.buildingEntity = entity
 
@@ -50,5 +57,32 @@ export class BuildingAction {
   static getDefinition({ entity }: { entity: Entity }) {
     const building = World.get(entity, BuildingComponent)
     return building ? BuildingRegistry.get(building.id) : undefined
+  }
+
+  static getBuildCost(def: BuildingDefinition): number {
+    const moneyCost = def.on.build?.park?.money ?? 0
+    return moneyCost < 0 ? -moneyCost : 0
+  }
+
+  static getFee(def: BuildingDefinition): number {
+    return def.on.visit?.park?.money ?? 0
+  }
+
+  static applyParkEffects(effects: StatChanges | undefined, source: string): void {
+    if (!effects) return
+    for (const [statId, amount] of Object.entries(effects)) {
+      if (statId === 'money') {
+        ParkAction.addMoney({ amount, source })
+      } else {
+        StatAction.change({ entity: Park.entity(), statId, delta: amount, source })
+      }
+    }
+  }
+
+  static applyGuestEffects(guestEntity: Entity, effects: StatChanges | undefined, source: string): void {
+    if (!effects) return
+    for (const [statId, amount] of Object.entries(effects)) {
+      StatAction.change({ entity: guestEntity, statId, delta: amount, source })
+    }
   }
 }

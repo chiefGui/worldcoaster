@@ -1,7 +1,6 @@
 import type { Entity } from '@ecs/entity'
 import { BuildingRegistry, type BuildingId } from '@game/building/building.component'
 import { BuildingAction } from '@game/building/building.action'
-import { StatEffectUtil } from '@framework/stat/stat-effect'
 import { buttonVariants } from '@ui/component/button'
 import { Sheet } from '@ui/component/sheet'
 
@@ -29,7 +28,7 @@ export function BuildingPicker({ plotEntity, onClose }: BuildingPickerProps) {
       </div>
       <div className="grid grid-cols-2 gap-3">
         {buildings.map((building) => {
-          const cost = StatEffectUtil.find(building.input, 'money')?.amount ?? 0
+          const cost = BuildingAction.getBuildCost(building)
           return (
             <button
               key={building.id}

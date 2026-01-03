@@ -1,19 +1,13 @@
 import type { Entity } from '@ecs/entity'
 import { World } from '@ecs/world'
 import { EffectProcessor } from '@framework/effect'
-import { StatComponent, Stat } from '@framework/stat/stat.component'
+import { StatComponent } from '@framework/stat/stat.component'
 import { StatAction } from '@framework/stat/stat.action'
-import { GuestComponent, Guest, GuestState, type GuestStateId } from './guest.component'
+import { GuestComponent, Guest, GuestState, GuestArchetype, GuestStat, type GuestStateId, type GuestArchetypeId } from './guest.component'
 
 export type SpawnGuestParams = {
-  initialMoney?: number
+  archetype?: GuestArchetypeId
   source?: string
-}
-
-export type PayParams = {
-  entity: Entity
-  amount: number
-  source: string
 }
 
 export type ChangeStateParams = {
@@ -30,8 +24,14 @@ export type StartRideParams = {
   source: string
 }
 
+const ARCHETYPES = Object.values(GuestArchetype)
+
+function randomArchetype(): GuestArchetypeId {
+  return ARCHETYPES[Math.floor(Math.random() * ARCHETYPES.length)] as GuestArchetypeId
+}
+
 export class GuestAction {
-  static spawn({ initialMoney = 100, source = 'game' }: SpawnGuestParams = {}): Entity | null {
+  static spawn({ archetype, source = 'game' }: SpawnGuestParams = {}): Entity | null {
     const entity = World.spawn()
     World.add(entity, GuestComponent, {
       targetEntity: null,
@@ -39,13 +39,14 @@ export class GuestAction {
     })
     World.add(entity, StatComponent, { values: {} })
     Guest.setState(entity, GuestState.idle)
+    Guest.setArchetype(entity, archetype ?? randomArchetype())
 
-    const effect = EffectProcessor.process<{ initialMoney: number }>({
+    const effect = EffectProcessor.process<Record<string, never>>({
       type: 'entity:spawn',
       entity,
       source,
       timestamp: 0,
-      payload: { initialMoney },
+      payload: {},
     })
 
     if (!effect) {
@@ -53,32 +54,13 @@ export class GuestAction {
       return null
     }
 
-    StatAction.set({ entity, statId: 'money', value: initialMoney, source })
-    StatAction.set({ entity, statId: 'happiness', value: 50, source })
-    StatAction.set({ entity, statId: 'hunger', value: 0, source })
+    StatAction.set({ entity, statId: GuestStat.happiness, value: 100, source })
+    StatAction.set({ entity, statId: GuestStat.hunger, value: 100, source })
+    StatAction.set({ entity, statId: GuestStat.thirst, value: 100, source })
+    StatAction.set({ entity, statId: GuestStat.energy, value: 100, source })
+    StatAction.set({ entity, statId: GuestStat.comfort, value: 100, source })
 
     return entity
-  }
-
-  static pay({ entity, amount, source }: PayParams): boolean {
-    const money = Stat.get(entity, 'money')
-    if (money < amount) return false
-
-    const effect = EffectProcessor.process<{ amount: number }>({
-      type: 'guest:pay',
-      entity,
-      source,
-      timestamp: 0,
-      payload: { amount },
-    })
-
-    if (!effect) return false
-
-    return StatAction.change({ entity, statId: 'money', delta: -effect.payload.amount, source })
-  }
-
-  static canAfford({ entity, amount }: { entity: Entity; amount: number }): boolean {
-    return Stat.get(entity, 'money') >= amount
   }
 
   static changeState({ entity, newState, target = null, source }: ChangeStateParams): boolean {

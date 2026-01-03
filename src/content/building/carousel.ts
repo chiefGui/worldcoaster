@@ -5,8 +5,15 @@ export const carousel = defineBuilding({
   id: 'carousel',
   name: 'Carousel',
   icon: carouselIcon,
-  input: [{ stat: 'money', amount: 5 }],
-  output: [{ stat: 'happiness', amount: 10 }],
+  category: 'ride',
   capacity: 12,
   duration: 3,
+  on: {
+    build: { park: { money: -500 } },
+    tick: { park: { money: -10 } },
+    visit: {
+      park: { money: 5 },
+      guest: { happiness: 10, energy: -5 },
+    },
+  },
 })

@@ -4,6 +4,7 @@ import { TimeSystem } from './system'
 import { ModifierSystem } from './modifier/modifier.system'
 import { GuestSystem } from '@game/guest/guest.system'
 import { QueueSystem } from '@game/queue/queue.system'
+import { ParkAction } from '@game/park'
 import { EffectProcessor } from './effect'
 import { GameTime } from './time'
 import { Modifier } from './modifier/modifier.component'
@@ -17,6 +18,7 @@ export class Game {
     this.initialized = true
 
     registerBuildings()
+    ParkAction.init()
     SystemRegistry.registerAll(TimeSystem, ModifierSystem, GuestSystem, QueueSystem)
   }
 
@@ -34,6 +36,7 @@ export class Game {
     EffectProcessor.clear()
     GameTime.reset()
     Modifier.clear()
+    ParkAction.reset()
     this.initialized = false
   }
 
