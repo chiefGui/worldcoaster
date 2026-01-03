@@ -1,40 +1,22 @@
-import { useEffect, useMemo, useRef } from 'react'
-import { useQuery } from '@ecs/react/use-query'
-import { PlotComponent, type PlotData } from '@game/plot/plot.component'
+import { useState, useEffect } from 'react'
+import type { Entity } from '@ecs/entity'
 import { PlotAction } from '@game/plot/plot.action'
-import { World } from '@ecs/world'
 import { PlotSlot } from './plot-slot'
 
 const GRID_SIZE = 6
+const PLOT_COUNT = GRID_SIZE * GRID_SIZE
 
 export function ParkGrid() {
-  const schemas = useMemo(() => [PlotComponent] as const, [])
-  const plots = useQuery(schemas)
-  const initialized = useRef(false)
+  const [plots, setPlots] = useState<Entity[]>([])
 
   useEffect(() => {
-    if (initialized.current) return
-    if (plots.length > 0) {
-      initialized.current = true
-      return
+    if (plots.length > 0) return
+    const entities: Entity[] = []
+    for (let i = 0; i < PLOT_COUNT; i++) {
+      entities.push(PlotAction.create())
     }
-
-    for (let y = 0; y < GRID_SIZE; y++) {
-      for (let x = 0; x < GRID_SIZE; x++) {
-        PlotAction.create(x, y)
-      }
-    }
-    initialized.current = true
+    setPlots(entities)
   }, [plots.length])
-
-  const sortedPlots = useMemo(() => {
-    return [...plots].sort((a, b) => {
-      const plotA = World.get(a, PlotComponent) as PlotData
-      const plotB = World.get(b, PlotComponent) as PlotData
-      if (plotA.y !== plotB.y) return plotA.y - plotB.y
-      return plotA.x - plotB.x
-    })
-  }, [plots])
 
   return (
     <div className="p-4">
@@ -42,7 +24,7 @@ export function ParkGrid() {
         className="grid gap-2 max-w-md mx-auto"
         style={{ gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)` }}
       >
-        {sortedPlots.map((entity) => (
+        {plots.map((entity) => (
           <PlotSlot key={entity} entity={entity} />
         ))}
       </div>

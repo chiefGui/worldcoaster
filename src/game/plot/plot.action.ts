@@ -3,9 +3,9 @@ import { World } from '@ecs/world'
 import { PlotComponent } from './plot.component'
 
 export class PlotAction {
-  static create(x: number, y: number): Entity {
+  static create(): Entity {
     const entity = World.spawn()
-    World.add(entity, PlotComponent, { x, y, buildingEntity: null })
+    World.add(entity, PlotComponent, { buildingEntity: null })
     return entity
   }
 
