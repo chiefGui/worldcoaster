@@ -84,14 +84,13 @@ export function BackdropProvider({ children, className, onClick }: BackdropProvi
   return (
     <BackdropContext.Provider value={controls}>
       {children}
-      {visible && (
-        <div
-          className={className}
-          onClick={onClick}
-          aria-hidden="true"
-          data-backdrop
-        />
-      )}
+      <div
+        className={className}
+        onClick={onClick}
+        aria-hidden="true"
+        data-backdrop
+        data-visible={visible || undefined}
+      />
     </BackdropContext.Provider>
   )
 }
