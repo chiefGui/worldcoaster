@@ -2,7 +2,7 @@ import type { Entity } from '@ecs/entity'
 import { BuildingRegistry, type BuildingId } from '@game/building/building.component'
 import { BuildingAction } from '@game/building/building.action'
 import { StatEffectUtil } from '@framework/stat/stat-effect'
-import { Button } from '@ui/component/button'
+import { buttonVariants } from '@ui/component/button'
 import { Sheet } from '@ui/component/sheet'
 
 export type BuildingPickerProps = {
@@ -22,11 +22,9 @@ export function BuildingPicker({ plotEntity, onClose }: BuildingPickerProps) {
   return (
     <div className="p-4 pb-8">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-text-primary">Build</h2>
-        <Sheet.Close>
-          <Button variant="ghost" size="sm">
-            Close
-          </Button>
+        <Sheet.Heading>Build</Sheet.Heading>
+        <Sheet.Close className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
+          Close
         </Sheet.Close>
       </div>
       <div className="grid grid-cols-2 gap-3">

@@ -1,147 +1,76 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from 'react'
+import { forwardRef, type ReactNode, type ComponentPropsWithoutRef } from 'react'
+import * as Ariakit from '@ariakit/react'
 
-type SheetContextValue = {
-  open: boolean
-  setOpen: (open: boolean) => void
-  toggle: () => void
-}
+export type SheetStore = Ariakit.DialogStore
 
-const SheetContext = createContext<SheetContextValue | null>(null)
-
-export function useSheet() {
-  const context = useContext(SheetContext)
-  if (!context) {
-    throw new Error('useSheet must be used within a Sheet.Root')
-  }
-  return context
+export function useSheetStore(props?: Ariakit.DialogStoreProps): SheetStore {
+  return Ariakit.useDialogStore(props)
 }
 
 export type SheetRootProps = {
   children: ReactNode
-  open?: boolean
-  onOpenChange?: (open: boolean) => void
-  defaultOpen?: boolean
+  store: SheetStore
 }
 
-function Root({ children, open: controlledOpen, onOpenChange, defaultOpen = false }: SheetRootProps) {
-  const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen)
-
-  const isControlled = controlledOpen !== undefined
-  const open = isControlled ? controlledOpen : uncontrolledOpen
-
-  const setOpen = useCallback(
-    (value: boolean) => {
-      if (!isControlled) {
-        setUncontrolledOpen(value)
-      }
-      onOpenChange?.(value)
-    },
-    [isControlled, onOpenChange]
-  )
-
-  const toggle = useCallback(() => setOpen(!open), [open, setOpen])
-
-  const value = useMemo(() => ({ open, setOpen, toggle }), [open, setOpen, toggle])
-
-  return <SheetContext.Provider value={value}>{children}</SheetContext.Provider>
+function Root({ children, store }: SheetRootProps) {
+  return <Ariakit.DialogProvider store={store}>{children}</Ariakit.DialogProvider>
 }
 
-export type SheetTriggerProps = {
-  children: ReactNode | ((props: { open: boolean }) => ReactNode)
-  asChild?: boolean
-}
+export type SheetTriggerProps = ComponentPropsWithoutRef<typeof Ariakit.DialogDisclosure>
 
-function Trigger({ children, asChild }: SheetTriggerProps) {
-  const { open, toggle } = useSheet()
+const Trigger = forwardRef<HTMLButtonElement, SheetTriggerProps>((props, ref) => {
+  return <Ariakit.DialogDisclosure ref={ref} {...props} />
+})
+Trigger.displayName = 'Sheet.Trigger'
 
-  if (typeof children === 'function') {
-    return <>{children({ open })}</>
-  }
-
-  if (asChild) {
-    return <>{children}</>
-  }
-
-  return (
-    <button type="button" onClick={toggle}>
-      {children}
-    </button>
-  )
-}
-
-export type SheetContentProps = {
+export type SheetContentProps = ComponentPropsWithoutRef<typeof Ariakit.Dialog> & {
   children: ReactNode
-  className?: string
 }
 
-function Content({ children, className }: SheetContentProps) {
-  const { open } = useSheet()
-
-  if (!open) return null
-
-  return <div className={className}>{children}</div>
-}
-
-export type SheetOverlayProps = {
-  className?: string
-  closeOnClick?: boolean
-}
-
-function Overlay({ className, closeOnClick = true }: SheetOverlayProps) {
-  const { open, setOpen } = useSheet()
-
-  useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden'
-    }
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [open])
-
-  if (!open) return null
-
+const Content = forwardRef<HTMLDivElement, SheetContentProps>(({ children, ...props }, ref) => {
   return (
-    <div
-      className={className}
-      onClick={closeOnClick ? () => setOpen(false) : undefined}
-      aria-hidden="true"
-    />
-  )
-}
-
-export type SheetCloseProps = {
-  children: ReactNode
-  asChild?: boolean
-}
-
-function Close({ children, asChild }: SheetCloseProps) {
-  const { setOpen } = useSheet()
-
-  if (asChild) {
-    return <>{children}</>
-  }
-
-  return (
-    <button type="button" onClick={() => setOpen(false)}>
+    <Ariakit.Dialog ref={ref} backdrop={<Backdrop />} {...props}>
       {children}
-    </button>
+    </Ariakit.Dialog>
   )
-}
+})
+Content.displayName = 'Sheet.Content'
+
+export type SheetBackdropProps = ComponentPropsWithoutRef<'div'>
+
+const Backdrop = forwardRef<HTMLDivElement, SheetBackdropProps>((props, ref) => {
+  return <div ref={ref} {...props} />
+})
+Backdrop.displayName = 'Sheet.Backdrop'
+
+export type SheetCloseProps = ComponentPropsWithoutRef<typeof Ariakit.DialogDismiss>
+
+const Close = forwardRef<HTMLButtonElement, SheetCloseProps>((props, ref) => {
+  return <Ariakit.DialogDismiss ref={ref} {...props} />
+})
+Close.displayName = 'Sheet.Close'
+
+export type SheetHeadingProps = ComponentPropsWithoutRef<typeof Ariakit.DialogHeading>
+
+const Heading = forwardRef<HTMLHeadingElement, SheetHeadingProps>((props, ref) => {
+  return <Ariakit.DialogHeading ref={ref} {...props} />
+})
+Heading.displayName = 'Sheet.Heading'
+
+export type SheetDescriptionProps = ComponentPropsWithoutRef<typeof Ariakit.DialogDescription>
+
+const Description = forwardRef<HTMLParagraphElement, SheetDescriptionProps>((props, ref) => {
+  return <Ariakit.DialogDescription ref={ref} {...props} />
+})
+Description.displayName = 'Sheet.Description'
 
 export const Sheet = {
   Root,
   Trigger,
   Content,
-  Overlay,
+  Backdrop,
   Close,
-  useSheet,
+  Heading,
+  Description,
+  useStore: useSheetStore,
 }

@@ -42,6 +42,8 @@ export class BuildingAction {
       maxLength: 100,
     })
 
+    def.onBuild?.(entity)
+
     return entity
   }
 

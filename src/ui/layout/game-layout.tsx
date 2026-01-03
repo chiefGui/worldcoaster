@@ -7,17 +7,20 @@ import { Sheet } from '@ui/component/sheet'
 
 export function GameLayout() {
   const [selectedPlot, setSelectedPlot] = useState<Entity | null>(null)
-  const [sheetOpen, setSheetOpen] = useState(false)
+  const sheetStore = Sheet.useStore()
 
-  const handleAddBuilding = useCallback((plotEntity: Entity) => {
-    setSelectedPlot(plotEntity)
-    setSheetOpen(true)
-  }, [])
+  const handleAddBuilding = useCallback(
+    (plotEntity: Entity) => {
+      setSelectedPlot(plotEntity)
+      sheetStore.show()
+    },
+    [sheetStore]
+  )
 
   const handleClose = useCallback(() => {
-    setSheetOpen(false)
+    sheetStore.hide()
     setSelectedPlot(null)
-  }, [])
+  }, [sheetStore])
 
   return (
     <div className="min-h-screen bg-bg-primary flex flex-col">
@@ -25,7 +28,7 @@ export function GameLayout() {
       <main className="flex-1">
         <ParkGrid onAddBuilding={handleAddBuilding} />
       </main>
-      <Sheet.Root open={sheetOpen} onOpenChange={setSheetOpen}>
+      <Sheet.Root store={sheetStore}>
         <Sheet.Content>
           <BuildingPicker plotEntity={selectedPlot} onClose={handleClose} />
         </Sheet.Content>

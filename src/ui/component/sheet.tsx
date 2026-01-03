@@ -1,102 +1,97 @@
-import type { ReactNode } from 'react'
-import { Sheet as SheetPrimitive } from '@ui/primitive/sheet'
+import { forwardRef, type ReactNode } from 'react'
+import * as Ariakit from '@ariakit/react'
+import { Sheet as SheetPrimitive, useSheetStore, type SheetStore } from '@ui/primitive/sheet'
 import { cn } from '@ui/lib/cn'
 
 export type SheetProps = {
   children: ReactNode
-  open?: boolean
-  onOpenChange?: (open: boolean) => void
-  defaultOpen?: boolean
+  store: SheetStore
 }
 
-function Root({ children, ...props }: SheetProps) {
-  return <SheetPrimitive.Root {...props}>{children}</SheetPrimitive.Root>
+function Root({ children, store }: SheetProps) {
+  return <SheetPrimitive.Root store={store}>{children}</SheetPrimitive.Root>
 }
 
-export type SheetTriggerProps = {
-  children: ReactNode
-  className?: string
-  asChild?: boolean
-}
+export type SheetTriggerProps = Ariakit.DialogDisclosureProps
 
-function Trigger({ children, className, asChild }: SheetTriggerProps) {
-  if (asChild) {
-    return <SheetPrimitive.Trigger asChild>{children}</SheetPrimitive.Trigger>
+const Trigger = forwardRef<HTMLButtonElement, SheetTriggerProps>(
+  ({ className, ...props }, ref) => {
+    return (
+      <Ariakit.DialogDisclosure
+        ref={ref}
+        className={cn(
+          'inline-flex items-center justify-center transition-colors',
+          'focus:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+          className
+        )}
+        {...props}
+      />
+    )
   }
+)
+Trigger.displayName = 'Sheet.Trigger'
 
-  return (
-    <SheetPrimitive.Trigger>
-      {({ open }) => (
-        <button
-          type="button"
-          className={cn(
-            'inline-flex items-center justify-center transition-colors',
-            'focus:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-            className
-          )}
-          onClick={() => {}}
-          aria-expanded={open}
-        >
-          {children}
-        </button>
-      )}
-    </SheetPrimitive.Trigger>
-  )
-}
+export type SheetContentProps = Ariakit.DialogProps
 
-function Overlay() {
-  return (
-    <SheetPrimitive.Overlay
-      className={cn(
-        'fixed inset-0 z-40 bg-black/60 backdrop-blur-sm',
-        'animate-in fade-in duration-200'
-      )}
-    />
-  )
-}
-
-export type SheetContentProps = {
-  children: ReactNode
-  className?: string
-}
-
-function Content({ children, className }: SheetContentProps) {
-  return (
-    <>
-      <Overlay />
-      <SheetPrimitive.Content
+const Content = forwardRef<HTMLDivElement, SheetContentProps>(
+  ({ children, className, ...props }, ref) => {
+    return (
+      <Ariakit.Dialog
+        ref={ref}
         className={cn(
           'fixed inset-x-0 bottom-0 z-50',
           'bg-bg-secondary border-t border-border rounded-t-2xl',
           'shadow-lg max-h-[85vh] overflow-auto',
-          'animate-in slide-in-from-bottom duration-300',
+          'transition-transform duration-200 ease-out',
+          'data-[enter]:animate-sheet-up data-[leave]:animate-sheet-down',
           className
         )}
+        backdrop={
+          <div
+            className={cn(
+              'fixed inset-0 z-40 bg-black/60 backdrop-blur-sm',
+              'transition-opacity duration-200',
+              'data-[enter]:animate-fade-in data-[leave]:animate-fade-out'
+            )}
+          />
+        }
+        {...props}
       >
         <div className="mx-auto w-12 h-1.5 bg-bg-tertiary rounded-full mt-3 mb-2" />
         {children}
-      </SheetPrimitive.Content>
-    </>
-  )
-}
+      </Ariakit.Dialog>
+    )
+  }
+)
+Content.displayName = 'Sheet.Content'
 
-export type SheetCloseProps = {
-  children: ReactNode
-  className?: string
-}
+export type SheetCloseProps = Ariakit.DialogDismissProps
 
-function Close({ children, className }: SheetCloseProps) {
-  return (
-    <SheetPrimitive.Close>
-      <span className={className}>{children}</span>
-    </SheetPrimitive.Close>
-  )
-}
+const Close = forwardRef<HTMLButtonElement, SheetCloseProps>((props, ref) => {
+  return <Ariakit.DialogDismiss ref={ref} {...props} />
+})
+Close.displayName = 'Sheet.Close'
+
+export type SheetHeadingProps = Ariakit.DialogHeadingProps
+
+const Heading = forwardRef<HTMLHeadingElement, SheetHeadingProps>(
+  ({ className, ...props }, ref) => {
+    return (
+      <Ariakit.DialogHeading
+        ref={ref}
+        className={cn('text-lg font-semibold text-text-primary', className)}
+        {...props}
+      />
+    )
+  }
+)
+Heading.displayName = 'Sheet.Heading'
 
 export const Sheet = {
   Root,
   Trigger,
   Content,
   Close,
-  useSheet: SheetPrimitive.useSheet,
+  Heading,
+  useStore: useSheetStore,
 }
