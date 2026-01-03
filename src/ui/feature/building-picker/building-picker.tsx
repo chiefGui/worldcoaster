@@ -3,6 +3,7 @@ import { BuildingRegistry, type BuildingId } from '@game/building/building.compo
 import { BuildingAction } from '@game/building/building.action'
 import { buttonVariants } from '@ui/component/button'
 import { Sheet } from '@ui/component/sheet'
+import { Toast } from '@ui/component/toast'
 
 export type BuildingPickerProps = {
   plotEntity: Entity | null
@@ -14,7 +15,11 @@ export function BuildingPicker({ plotEntity, onClose }: BuildingPickerProps) {
 
   const handleSelect = (buildingId: BuildingId) => {
     if (!plotEntity) return
-    BuildingAction.build({ plotEntity, buildingId })
+    const building = BuildingAction.build({ plotEntity, buildingId })
+    if (building) {
+      const def = BuildingRegistry.get(buildingId)
+      Toast.success(`${def?.name ?? 'Building'} built!`)
+    }
     onClose()
   }
 
