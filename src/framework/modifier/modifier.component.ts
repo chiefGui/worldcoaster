@@ -3,24 +3,12 @@ import type { Entity } from '@ecs/entity'
 import type { ComponentSchema } from '@ecs/component'
 import type { StatId } from '../stat/stat.component'
 
-// Modifier tags - for categorization and bulk operations
+// Modifier tags - behavior-only (sources go in `source` field)
 export const ModifierTag = {
-  // Effect types
   buff: 'buff',
   debuff: 'debuff',
-  neutral: 'neutral',
-
-  // Sources
-  consumable: 'consumable',
-  equipment: 'equipment',
-  environment: 'environment',
-  weather: 'weather',
-  event: 'event',
-
-  // Removal categories
   cleansable: 'cleansable',
   permanent: 'permanent',
-  transferable: 'transferable',
 } as const
 
 export type ModifierTagId = typeof ModifierTag[keyof typeof ModifierTag]

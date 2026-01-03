@@ -3,7 +3,7 @@ import { World } from '@ecs/world'
 import { EffectProcessor } from '@framework/effect'
 import { StatComponent, Stat } from '@framework/stat/stat.component'
 import { StatAction } from '@framework/stat/stat.action'
-import { GuestComponent, type GuestState } from './guest.component'
+import { GuestComponent, Guest, GuestState, type GuestStateId } from './guest.component'
 
 export type SpawnGuestParams = {
   initialMoney?: number
@@ -18,7 +18,7 @@ export type PayParams = {
 
 export type ChangeStateParams = {
   entity: Entity
-  newState: GuestState
+  newState: GuestStateId
   target?: Entity | null
   source: string
 }
@@ -34,11 +34,11 @@ export class GuestAction {
   static spawn({ initialMoney = 100, source = 'game' }: SpawnGuestParams = {}): Entity | null {
     const entity = World.spawn()
     World.add(entity, GuestComponent, {
-      state: 'idle',
       targetEntity: null,
       rideTimeRemaining: 0,
     })
     World.add(entity, StatComponent, { values: {} })
+    Guest.setState(entity, GuestState.idle)
 
     const effect = EffectProcessor.process<{ initialMoney: number }>({
       type: 'entity:spawn',
@@ -85,9 +85,9 @@ export class GuestAction {
     const guest = World.get(entity, GuestComponent)
     if (!guest) return false
 
-    const previousState = guest.state
+    const previousState = Guest.state(entity)
 
-    const effect = EffectProcessor.process<{ previousState: GuestState; newState: GuestState; target: Entity | null }>({
+    const effect = EffectProcessor.process<{ previousState: GuestStateId; newState: GuestStateId; target: Entity | null }>({
       type: 'guest:state-change',
       entity,
       source,
@@ -97,7 +97,7 @@ export class GuestAction {
 
     if (!effect) return false
 
-    guest.state = effect.payload.newState
+    Guest.setState(entity, effect.payload.newState)
     guest.targetEntity = effect.payload.target
     return true
   }
@@ -107,7 +107,7 @@ export class GuestAction {
     if (!guest) return false
 
     guest.rideTimeRemaining = duration
-    return this.changeState({ entity, newState: 'riding', target: buildingEntity, source })
+    return this.changeState({ entity, newState: GuestState.riding, target: buildingEntity, source })
   }
 
   static tickRide({ entity, dt }: { entity: Entity; dt: number }): boolean {
