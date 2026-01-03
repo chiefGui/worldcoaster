@@ -11,6 +11,8 @@ export default defineConfig({
       '@ecs': resolve(__dirname, './src/ecs'),
       '@framework': resolve(__dirname, './src/framework'),
       '@game': resolve(__dirname, './src/game'),
+      '@ui': resolve(__dirname, './src/ui'),
+      '@content': resolve(__dirname, './src/content'),
     },
   },
 })

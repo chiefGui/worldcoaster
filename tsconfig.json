@@ -20,7 +20,9 @@
     "paths": {
       "@ecs/*": ["./src/ecs/*"],
       "@framework/*": ["./src/framework/*"],
-      "@game/*": ["./src/game/*"]
+      "@game/*": ["./src/game/*"],
+      "@ui/*": ["./src/ui/*"],
+      "@content/*": ["./src/content/*"]
     },
     "baseUrl": "."
   },

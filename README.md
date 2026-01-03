@@ -8,7 +8,32 @@ Theme park simulation with custom ECS optimized for mobile. Target: 60fps, 50K g
 src/
 ├── ecs/           # Core primitives (no external imports)
 ├── framework/     # Reusable framework (imports ecs)
-└── game/          # Game content (imports ecs + framework)
+├── game/          # Game logic (imports ecs + framework)
+├── content/       # Game data (building definitions, etc.)
+└── ui/            # Presentation layer (React)
+    ├── primitive/ # Headless, state-only components
+    ├── component/ # Styled, reusable components
+    ├── feature/   # Domain-specific composed features
+    └── layout/    # Page-level compositions
+```
+
+## Code Conventions
+
+**Use static classes for functions, individual exports only for types:**
+
+```typescript
+// ✅ Good - static class
+export class StatEffectUtil {
+  static sum(effects: StatEffect[], stat: string): number { /* ... */ }
+  static find(effects: StatEffect[], stat: string): StatEffect | undefined { /* ... */ }
+}
+
+// ❌ Bad - multiple function exports
+export function sumEffects(...) { }
+export function findEffect(...) { }
+
+// ✅ Types can be individual exports
+export type StatEffect = { stat: string; amount: number }
 ```
 
 ## ECS Core
@@ -92,6 +117,27 @@ const guests = useQuery([GuestComponent])
 const data = useComponent(entity, GuestComponent)
 ```
 
+## Content Definitions
+
+Building definitions live in `content/building/`. Use `defineBuilding` for type-safe definitions with hook support:
+
+```typescript
+// content/building/carousel.ts
+import { defineBuilding } from '@game/building/building.component'
+
+export const carousel = defineBuilding({
+  id: 'carousel',
+  name: 'Carousel',
+  input: [{ stat: 'money', amount: 5 }],
+  output: [{ stat: 'happiness', amount: 10 }],
+  capacity: 12,
+  duration: 3,
+  // Optional hooks
+  onBuild: (entity) => { /* ... */ },
+  onDestroy: (entity) => { /* ... */ },
+})
+```
+
 ## Quick Reference
 
 | Add stat | `StatAction.set({ entity, statId, value, source })` |
@@ -100,3 +146,4 @@ const data = useComponent(entity, GuestComponent)
 | Add system | `@System('name')` + `static tick(dt)` |
 | Add tag | `Tag.add(entity, 'mytag')` |
 | State machine | `Tag.set(entity, newState, allStates)` |
+| Add building | `defineBuilding({ id, name, input, output, capacity, duration })` |

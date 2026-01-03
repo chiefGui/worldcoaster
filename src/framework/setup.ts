@@ -7,6 +7,7 @@ import { QueueSystem } from '@game/queue/queue.system'
 import { EffectProcessor } from './effect'
 import { GameTime } from './time'
 import { Modifier } from './modifier/modifier.component'
+import { registerBuildings } from '@content/building'
 
 export class Game {
   private static initialized = false
@@ -15,6 +16,7 @@ export class Game {
     if (this.initialized) return
     this.initialized = true
 
+    registerBuildings()
     SystemRegistry.registerAll(TimeSystem, ModifierSystem, GuestSystem, QueueSystem)
   }
 
