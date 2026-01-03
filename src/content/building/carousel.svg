@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Base platform -->
+  <path d="M6 22L16 27L26 22L16 17L6 22Z" fill="#8B5A2B"/>
+  <path d="M16 17L26 22V24L16 29V27L6 22V20L16 17Z" fill="#6B4423"/>
+
+  <!-- Center pole -->
+  <rect x="15" y="8" width="2" height="14" fill="#C0C0C0"/>
+  <rect x="15" y="8" width="1" height="14" fill="#D4D4D4"/>
+
+  <!-- Canopy top - octagonal roof -->
+  <path d="M16 4L24 8L24 10L16 14L8 10L8 8L16 4Z" fill="#E63946"/>
+  <path d="M16 4L8 8L8 10L16 14V4Z" fill="#C1121F"/>
+  <path d="M16 4L24 8V10L16 14V4Z" fill="#FF6B6B"/>
+
+  <!-- Canopy stripes -->
+  <path d="M16 4L12 6L12 9L16 12V4Z" fill="#FFE5E5" opacity="0.3"/>
+  <path d="M16 4L20 6L20 9L16 12V4Z" fill="#FFE5E5" opacity="0.2"/>
+
+  <!-- Finial on top -->
+  <circle cx="16" cy="4" r="1.5" fill="#FFD700"/>
+
+  <!-- Hanging horses/seats - left -->
+  <path d="M9 12L10 11L11 12L11 16L10 18L9 16V12Z" fill="#4A90D9"/>
+  <circle cx="10" cy="12" r="0.5" fill="#C0C0C0"/>
+
+  <!-- Hanging horses/seats - right -->
+  <path d="M21 12L22 11L23 12L23 16L22 18L21 16V12Z" fill="#9B59B6"/>
+  <circle cx="22" cy="12" r="0.5" fill="#C0C0C0"/>
+
+  <!-- Hanging horses/seats - front -->
+  <path d="M15 14L16 13L17 14L17 18L16 20L15 18V14Z" fill="#2ECC71"/>
+  <circle cx="16" cy="14" r="0.5" fill="#C0C0C0"/>
+</svg>

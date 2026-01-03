@@ -1,7 +1,7 @@
 export type Entity = number
 
 export class EntityManager {
-  private static nextId: Entity = 0
+  private static nextId: Entity = 1
   private static readonly freeList: Entity[] = []
   private static readonly alive = new Set<Entity>()
 
@@ -30,7 +30,7 @@ export class EntityManager {
   }
 
   static clear(): void {
-    this.nextId = 0
+    this.nextId = 1
     this.freeList.length = 0
     this.alive.clear()
   }
