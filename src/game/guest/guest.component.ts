@@ -3,6 +3,18 @@ import type { Entity } from '@ecs/entity'
 import type { ComponentSchema } from '@ecs/component'
 import { Stat } from '@framework/stat/stat.component'
 
+// Guest stats - colocated with domain
+export const GuestStat = {
+  MONEY: 'money',
+  HAPPINESS: 'happiness',
+  HUNGER: 'hunger',
+  THIRST: 'thirst',
+  ENERGY: 'energy',
+  NAUSEA: 'nausea',
+} as const
+
+export type GuestStatId = typeof GuestStat[keyof typeof GuestStat]
+
 export type GuestState = 'idle' | 'walking' | 'queuing' | 'riding' | 'leaving'
 
 export type GuestData = {
@@ -37,6 +49,6 @@ export class Guest {
   }
 
   static canAfford(entity: Entity, amount: number): boolean {
-    return Stat.get(entity, 'money') >= amount
+    return Stat.get(entity, GuestStat.MONEY) >= amount
   }
 }

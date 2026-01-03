@@ -3,6 +3,28 @@ import type { Entity } from '@ecs/entity'
 import type { ComponentSchema } from '@ecs/component'
 import type { StatId } from '../stat/stat.component'
 
+// Modifier tags - for categorization and bulk operations
+export const ModifierTag = {
+  // Effect types
+  BUFF: 'buff',
+  DEBUFF: 'debuff',
+  NEUTRAL: 'neutral',
+
+  // Sources
+  CONSUMABLE: 'consumable',
+  EQUIPMENT: 'equipment',
+  ENVIRONMENT: 'environment',
+  WEATHER: 'weather',
+  EVENT: 'event',
+
+  // Removal categories
+  CLEANSABLE: 'cleansable',
+  PERMANENT: 'permanent',
+  TRANSFERABLE: 'transferable',
+} as const
+
+export type ModifierTagId = typeof ModifierTag[keyof typeof ModifierTag]
+
 // Computation phases - order matters, extensible via registry
 export type ModifierPhase =
   | 'base_add'      // Added to base value first

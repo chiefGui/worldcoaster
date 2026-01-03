@@ -2,6 +2,19 @@ import { World } from '@ecs/world'
 import type { Entity } from '@ecs/entity'
 import type { ComponentSchema } from '@ecs/component'
 
+// Building stats - colocated with domain
+export const BuildingStat = {
+  CAPACITY: 'capacity',
+  RIDE_DURATION: 'rideDuration',
+  TICKET_PRICE: 'ticketPrice',
+  EXCITEMENT: 'excitement',
+  INTENSITY: 'intensity',
+  NAUSEA_RATING: 'nauseaRating',
+  MAINTENANCE_COST: 'maintenanceCost',
+} as const
+
+export type BuildingStatId = typeof BuildingStat[keyof typeof BuildingStat]
+
 export type BuildingTypeId = string
 
 export type BuildingData = {
