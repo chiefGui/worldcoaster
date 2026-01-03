@@ -7,6 +7,7 @@ import { ComponentRegistry } from './component'
 import { QueryManager } from './query'
 import { SystemManager } from './system'
 import { EventBus, EcsEvent } from './event'
+import { Tag } from './tag'
 
 export class World {
   private static running = false
@@ -24,6 +25,7 @@ export class World {
     if (!EntityManager.isAlive(entity)) return
     QueryManager.removeEntity(entity)
     ComponentRegistry.clearEntity(entity)
+    Tag.clearEntity(entity)
     EntityManager.destroy(entity)
     EventBus.emit(EcsEvent.ENTITY_DESTROYED, entity)
   }
@@ -110,6 +112,7 @@ export class World {
     QueryManager.clear()
     SystemManager.clear()
     EventBus.clear()
+    Tag.clear()
     this.componentChangeQueue.length = 0
   }
 

@@ -1,14 +1,13 @@
 import type { QuerySchema } from '@ecs/query'
 import { World } from '@ecs/world'
 import { System } from '@ecs/decorator'
-import { GuestComponent, Guest } from './guest.component'
+import { GuestComponent, Guest, GuestState } from './guest.component'
 import { GuestAction } from './guest.action'
 import { BuildingComponent, Building } from '../building/building.component'
 import { QueueComponent, Queue } from '../queue/queue.component'
 import { QueueAction } from '../queue/queue.action'
 import { Stat } from '@framework/stat/stat.component'
 import { StatAction } from '@framework/stat/stat.action'
-import { Modifier } from '@framework/modifier/modifier.component'
 
 @System('guest')
 export class GuestSystem {
@@ -59,7 +58,7 @@ export class GuestSystem {
     const def = Building.type(building)
     if (!def) return
 
-    const ticketPrice = Modifier.compute(building, 'ticketPrice', def.inputAmount)
+    const ticketPrice = Stat.getFinal(building, 'ticketPrice')
     if (!Guest.canAfford(entity, ticketPrice)) return
 
     const queueEntity = this.findQueueForBuilding(building)
@@ -69,7 +68,7 @@ export class GuestSystem {
 
     if (GuestAction.pay({ entity, amount: ticketPrice, source: def.id })) {
       QueueAction.join({ queueEntity, guestEntity: entity, source: 'guest-system' })
-      GuestAction.changeState({ entity, newState: 'queuing', target: queueEntity, source: 'guest-system' })
+      GuestAction.changeState({ entity, newState: GuestState.queuing, target: queueEntity, source: 'guest-system' })
     }
   }
 
@@ -83,7 +82,7 @@ export class GuestSystem {
           StatAction.change({ entity, statId: def.outputStat, delta: def.outputAmount, source: def.id })
         }
       }
-      GuestAction.changeState({ entity, newState: 'idle', target: null, source: 'guest-system' })
+      GuestAction.changeState({ entity, newState: GuestState.idle, target: null, source: 'guest-system' })
     }
   }
 
@@ -94,17 +93,17 @@ export class GuestSystem {
       const state = Guest.state(entity)
 
       switch (state) {
-        case 'idle':
+        case GuestState.idle:
           this.processIdleGuest(entity)
           break
-        case 'riding':
+        case GuestState.riding:
           this.processRidingGuest(entity, dt)
           break
       }
 
       const happiness = Stat.get(entity, 'happiness')
       if (happiness <= 0) {
-        GuestAction.changeState({ entity, newState: 'leaving', target: null, source: 'guest-system' })
+        GuestAction.changeState({ entity, newState: GuestState.leaving, target: null, source: 'guest-system' })
       }
     }
   }

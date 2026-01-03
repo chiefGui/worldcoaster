@@ -11,6 +11,8 @@ export type EffectType =
   | 'building:built'
   | 'queue:join'
   | 'queue:leave'
+  | 'modifier:apply'
+  | 'modifier:remove'
 
 export type Effect<T = unknown> = {
   type: EffectType
