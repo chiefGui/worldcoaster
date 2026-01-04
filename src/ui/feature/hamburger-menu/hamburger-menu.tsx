@@ -20,6 +20,7 @@ import { GuestComponent } from '@game/guest/guest.component'
 import { BuildingComponent } from '@game/building/building.component'
 import { Modifier, ModifierComponent } from '@framework/modifier/modifier.component'
 import { Stat } from '@framework/stat/stat.component'
+import { CONFIG } from '@framework/config'
 import { cn } from '@ui/lib/cn'
 
 type HamburgerMenuContextValue = {
@@ -267,6 +268,39 @@ function DebugStatsContent() {
           <div className="flex justify-between">
             <span className="text-text-secondary">entryFee</span>
             <span className="text-text-primary">${stats.entryFee}</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Spawn Rate */}
+      <section>
+        <h3 className="text-xs font-medium text-text-secondary uppercase tracking-wide mb-2">
+          Spawn Rate
+        </h3>
+        <div className="rounded-lg bg-bg-secondary p-3 font-mono text-sm space-y-2">
+          <div className="flex justify-between">
+            <span className="text-text-secondary">guests/sec</span>
+            <span className="text-text-primary">
+              {((stats.attractivenessFinal + stats.novelty) * CONFIG.spawn.factor).toFixed(2)}
+            </span>
+          </div>
+          <div className="border-t border-border-secondary pt-2 space-y-1 text-xs">
+            <div className="flex justify-between text-text-tertiary">
+              <span>attractiveness</span>
+              <span>{stats.attractivenessFinal}</span>
+            </div>
+            <div className="flex justify-between text-text-tertiary">
+              <span>+ novelty</span>
+              <span>{stats.novelty.toFixed(1)}</span>
+            </div>
+            <div className="flex justify-between text-text-tertiary">
+              <span>= total</span>
+              <span>{(stats.attractivenessFinal + stats.novelty).toFixed(1)}</span>
+            </div>
+            <div className="flex justify-between text-text-tertiary">
+              <span>× factor</span>
+              <span>{CONFIG.spawn.factor}</span>
+            </div>
           </div>
         </div>
       </section>
