@@ -1,10 +1,12 @@
 export const CONFIG = {
   park: {
     name: 'My Park',
-    initialMoney: 20000,
-    initialAttractiveness: 10,
-    initialEntryFee: 10,
-    initialNovelty: 0,
+    initial: {
+      money: 20000,
+      attractiveness: 10,
+      entryFee: 10,
+      novelty: 0,
+    },
   },
   novelty: {
     max: 100,

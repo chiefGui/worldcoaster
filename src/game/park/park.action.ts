@@ -16,10 +16,10 @@ export class ParkAction {
   static init(params: ParkInitParams = {}): void {
     const {
       name = CONFIG.park.name,
-      initialMoney = CONFIG.park.initialMoney,
-      initialAttractiveness = CONFIG.park.initialAttractiveness,
-      initialEntryFee = CONFIG.park.initialEntryFee,
-      initialNovelty = CONFIG.park.initialNovelty,
+      initialMoney = CONFIG.park.initial.money,
+      initialAttractiveness = CONFIG.park.initial.attractiveness,
+      initialEntryFee = CONFIG.park.initial.entryFee,
+      initialNovelty = CONFIG.park.initial.novelty,
     } = params
 
     const entity = World.spawn()
