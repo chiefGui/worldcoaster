@@ -7,6 +7,10 @@ import { CONFIG } from '@framework/config'
 export class AttractionSystem {
   private static spawnAccumulator = 0
 
+  static reset(): void {
+    this.spawnAccumulator = 0
+  }
+
   static tick(dt: number): void {
     const attractiveness = Park.attractivenessFinal()
     const novelty = Park.novelty()
