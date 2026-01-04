@@ -58,7 +58,7 @@ export class Game {
     EffectProcessor.clear()
     GameTime.reset()
     Modifier.clear()
-    AttractionSystem.reset()
+    SystemRegistry.resetAll()
     ParkAction.reset()
     this.initialized = false
   }
