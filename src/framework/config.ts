@@ -3,8 +3,8 @@ export const CONFIG = {
     name: 'My Park',
     initial: {
       money: 20000,
-      attractiveness: 10,
-      entryFee: 10,
+      attractiveness: 0,
+      entryFee: 5,
       novelty: 0,
     },
   },
@@ -17,6 +17,6 @@ export const CONFIG = {
     },
   },
   spawn: {
-    factor: 0.1, // guests per point of (attractiveness + novelty) per second
+    factor: 0.01, // guests per point of (attractiveness + novelty) per second
   },
 } as const
