@@ -1,6 +1,7 @@
 import { World } from '@ecs/world'
 import { StatComponent } from '@framework/stat/stat.component'
 import { StatAction } from '@framework/stat/stat.action'
+import { CONFIG } from '@framework/config'
 import { Park, ParkComponent, ParkStat } from './park.component'
 
 export type ParkInitParams = {
@@ -11,22 +12,14 @@ export type ParkInitParams = {
   initialNovelty?: number
 }
 
-const DEFAULTS = {
-  name: 'My Park',
-  initialMoney: 20000,
-  initialAttractiveness: 10,
-  initialEntryFee: 10,
-  initialNovelty: 0,
-}
-
 export class ParkAction {
   static init(params: ParkInitParams = {}): void {
     const {
-      name = DEFAULTS.name,
-      initialMoney = DEFAULTS.initialMoney,
-      initialAttractiveness = DEFAULTS.initialAttractiveness,
-      initialEntryFee = DEFAULTS.initialEntryFee,
-      initialNovelty = DEFAULTS.initialNovelty,
+      name = CONFIG.park.name,
+      initialMoney = CONFIG.park.initialMoney,
+      initialAttractiveness = CONFIG.park.initialAttractiveness,
+      initialEntryFee = CONFIG.park.initialEntryFee,
+      initialNovelty = CONFIG.park.initialNovelty,
     } = params
 
     const entity = World.spawn()
