@@ -108,6 +108,9 @@ export class GuestSystem {
         case GuestState.riding:
           this.processRidingGuest(entity, dt)
           break
+        case GuestState.leaving:
+          World.despawn(entity)
+          continue
       }
 
       this.decayNeeds(entity)
