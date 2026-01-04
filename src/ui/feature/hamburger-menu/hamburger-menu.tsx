@@ -285,19 +285,19 @@ function DebugStatsContent() {
             </span>
           </div>
           <div className="border-t border-border-secondary pt-2 space-y-1 text-xs">
-            <div className="flex justify-between text-text-tertiary">
+            <div className="flex justify-between text-text-secondary">
               <span>attractiveness</span>
               <span>{stats.attractivenessFinal}</span>
             </div>
-            <div className="flex justify-between text-text-tertiary">
+            <div className="flex justify-between text-text-secondary">
               <span>+ novelty</span>
               <span>{stats.novelty.toFixed(1)}</span>
             </div>
-            <div className="flex justify-between text-text-tertiary">
+            <div className="flex justify-between text-text-secondary">
               <span>= total</span>
               <span>{(stats.attractivenessFinal + stats.novelty).toFixed(1)}</span>
             </div>
-            <div className="flex justify-between text-text-tertiary">
+            <div className="flex justify-between text-text-secondary">
               <span>× factor</span>
               <span>{CONFIG.spawn.factor}</span>
             </div>
