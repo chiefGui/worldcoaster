@@ -7,6 +7,7 @@ import { Park, ParkStat } from '@game/park'
 import { ParkAction } from '@game/park'
 import { CONFIG } from '@framework/config'
 import {
+  Building,
   BuildingComponent,
   BuildingRegistry,
   type BuildingId,
@@ -102,9 +103,23 @@ export class BuildingAction {
   }
 
   private static boostNovelty(def: BuildingDefinition): void {
-    if (def.noveltyBoost <= 0) return
+    if (def.category !== 'ride') return
+
+    const isUnique = this.countBuildingsOfType(def.id) <= 1
+    const boost = isUnique ? CONFIG.novelty.boost.unique : CONFIG.novelty.boost.duplicate
+
     const current = Park.novelty()
-    const newValue = Math.min(current + def.noveltyBoost, CONFIG.novelty.max)
+    const newValue = Math.min(current + boost, CONFIG.novelty.max)
     ParkAction.setNovelty({ value: newValue, source: `building:${def.id}` })
+  }
+
+  private static buildingQuery = World.createQuery([BuildingComponent])
+
+  private static countBuildingsOfType(buildingId: BuildingId): number {
+    let count = 0
+    for (const entity of World.query(this.buildingQuery)) {
+      if (Building.id(entity) === buildingId) count++
+    }
+    return count
   }
 }

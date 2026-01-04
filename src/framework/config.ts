@@ -11,6 +11,10 @@ export const CONFIG = {
   novelty: {
     max: 100,
     decayRate: 0.5, // per second
+    boost: {
+      unique: 40,    // first of its kind
+      duplicate: 10, // already have one
+    },
   },
   spawn: {
     factor: 0.1, // guests per point of (attractiveness + novelty) per second

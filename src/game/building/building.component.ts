@@ -55,7 +55,6 @@ export type BuildingDefinition = {
   capacity: number
   duration: number
   appeal: number
-  noveltyBoost: number
   tags: BuildingTags
   on: BuildingOn
 } & BuildingHooks
