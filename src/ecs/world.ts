@@ -127,6 +127,14 @@ export class World {
     this.componentChangeQueue.length = 0
   }
 
+  static clearEntities(): void {
+    EntityManager.clear()
+    ComponentRegistry.clear()
+    QueryManager.clear()
+    Tag.clear()
+    this.componentChangeQueue.length = 0
+  }
+
   static entityCount(): number {
     return EntityManager.count()
   }
