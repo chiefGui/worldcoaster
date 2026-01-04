@@ -8,6 +8,8 @@ export const carousel = defineBuilding({
   category: 'ride',
   capacity: 12,
   duration: 3,
+  appeal: 10,
+  tags: { family: 0.8, gentle: 0.6 },
   on: {
     build: { park: { money: -500 } },
     tick: { park: { money: -10 } },

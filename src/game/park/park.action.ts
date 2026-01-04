@@ -1,6 +1,7 @@
 import { World } from '@ecs/world'
 import { StatComponent } from '@framework/stat/stat.component'
 import { StatAction } from '@framework/stat/stat.action'
+import { CONFIG } from '@framework/config'
 import { Park, ParkComponent, ParkStat } from './park.component'
 
 export type ParkInitParams = {
@@ -8,22 +9,17 @@ export type ParkInitParams = {
   initialMoney?: number
   initialAttractiveness?: number
   initialEntryFee?: number
-}
-
-const DEFAULTS = {
-  name: 'My Park',
-  initialMoney: 20000,
-  initialAttractiveness: 10,
-  initialEntryFee: 10,
+  initialNovelty?: number
 }
 
 export class ParkAction {
   static init(params: ParkInitParams = {}): void {
     const {
-      name = DEFAULTS.name,
-      initialMoney = DEFAULTS.initialMoney,
-      initialAttractiveness = DEFAULTS.initialAttractiveness,
-      initialEntryFee = DEFAULTS.initialEntryFee,
+      name = CONFIG.park.name,
+      initialMoney = CONFIG.park.initial.money,
+      initialAttractiveness = CONFIG.park.initial.attractiveness,
+      initialEntryFee = CONFIG.park.initial.entryFee,
+      initialNovelty = CONFIG.park.initial.novelty,
     } = params
 
     const entity = World.spawn()
@@ -35,6 +31,7 @@ export class ParkAction {
     StatAction.set({ entity, statId: ParkStat.money, value: initialMoney, source: 'park-init' })
     StatAction.set({ entity, statId: ParkStat.attractiveness, value: initialAttractiveness, source: 'park-init' })
     StatAction.set({ entity, statId: ParkStat.entryFee, value: initialEntryFee, source: 'park-init' })
+    StatAction.set({ entity, statId: ParkStat.novelty, value: initialNovelty, source: 'park-init' })
   }
 
   static addMoney(params: { amount: number; source: string }): void {
@@ -57,6 +54,16 @@ export class ParkAction {
   static addAttractiveness(params: { amount: number; source: string }): void {
     const { amount, source } = params
     StatAction.change({ entity: Park.entity(), statId: ParkStat.attractiveness, delta: amount, source })
+  }
+
+  static addNovelty(params: { amount: number; source: string }): void {
+    const { amount, source } = params
+    StatAction.change({ entity: Park.entity(), statId: ParkStat.novelty, delta: amount, source })
+  }
+
+  static setNovelty(params: { value: number; source: string }): void {
+    const { value, source } = params
+    StatAction.set({ entity: Park.entity(), statId: ParkStat.novelty, value, source })
   }
 
   static reset(): void {
