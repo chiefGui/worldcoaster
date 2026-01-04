@@ -18,6 +18,8 @@ export type BuildingCategory = 'ride' | 'facility' | 'shop'
 
 export type StatChanges = Record<string, number>
 
+export type BuildingTags = Record<string, number>
+
 export type BuildingEffects = {
   park?: StatChanges
   guest?: StatChanges
@@ -52,6 +54,9 @@ export type BuildingDefinition = {
   category: BuildingCategory
   capacity: number
   duration: number
+  appeal: number
+  noveltyBoost: number
+  tags: BuildingTags
   on: BuildingOn
 } & BuildingHooks
 

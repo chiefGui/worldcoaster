@@ -3,6 +3,8 @@ import { SystemRegistry } from '@ecs/decorator'
 import { ComponentRegistry } from '@ecs/component'
 import { TimeSystem } from './system'
 import { ModifierSystem } from './modifier/modifier.system'
+import { NoveltySystem } from '@game/novelty/novelty.system'
+import { AttractionSystem } from '@game/attraction/attraction.system'
 import { GuestSystem } from '@game/guest/guest.system'
 import { QueueSystem } from '@game/queue/queue.system'
 import { Park, ParkComponent, ParkAction } from '@game/park'
@@ -21,7 +23,7 @@ export class Game {
 
     registerBuildings()
     ParkAction.init()
-    SystemRegistry.registerAll(TimeSystem, ModifierSystem, GuestSystem, QueueSystem)
+    SystemRegistry.registerAll(TimeSystem, ModifierSystem, NoveltySystem, AttractionSystem, GuestSystem, QueueSystem)
   }
 
   static async start(): Promise<void> {
