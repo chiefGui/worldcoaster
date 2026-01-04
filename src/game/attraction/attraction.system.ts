@@ -1,5 +1,5 @@
 import { System } from '@ecs/decorator'
-import { Park } from '@game/park'
+import { Park, ParkAction } from '@game/park'
 import { GuestAction } from '@game/guest/guest.action'
 import { CONFIG } from '@framework/config'
 
@@ -22,7 +22,10 @@ export class AttractionSystem {
     this.spawnAccumulator += guestsPerSecond * dt
 
     while (this.spawnAccumulator >= 1) {
-      GuestAction.spawn({ source: 'attraction-system' })
+      const guest = GuestAction.spawn({ source: 'attraction-system' })
+      if (guest) {
+        ParkAction.addMoney({ amount: Park.entryFee(), source: 'entry-fee' })
+      }
       this.spawnAccumulator -= 1
     }
   }

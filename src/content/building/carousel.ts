@@ -14,7 +14,6 @@ export const carousel = defineBuilding({
     build: { park: { money: -500 } },
     tick: { park: { money: -10 } },
     visit: {
-      park: { money: 5 },
       guest: { happiness: 10, energy: -5 },
     },
   },
