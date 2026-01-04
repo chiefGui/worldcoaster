@@ -12,8 +12,8 @@ export const CONFIG = {
     max: 100,
     decayRate: 0.5, // per second
     boost: {
-      unique: 40,    // first of its kind
-      duplicate: 10, // already have one
+      base: 40,  // first of its kind
+      floor: 2,  // minimum boost no matter how many duplicates
     },
   },
   spawn: {

@@ -105,8 +105,8 @@ export class BuildingAction {
   private static boostNovelty(def: BuildingDefinition): void {
     if (def.category !== 'ride') return
 
-    const isUnique = this.countBuildingsOfType(def.id) <= 1
-    const boost = isUnique ? CONFIG.novelty.boost.unique : CONFIG.novelty.boost.duplicate
+    const count = this.countBuildingsOfType(def.id)
+    const boost = Math.max(CONFIG.novelty.boost.floor, Math.floor(CONFIG.novelty.boost.base / count))
 
     const current = Park.novelty()
     const newValue = Math.min(current + boost, CONFIG.novelty.max)
