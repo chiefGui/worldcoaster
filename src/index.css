@@ -10,9 +10,11 @@
 /* JetBrains Mono for numbers only (0-9) - always applied regardless of font choice */
 @font-face {
   font-family: 'Tabular Numbers';
-  src: local('JetBrains Mono Variable'), local('JetBrains Mono');
+  src: url('@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2') format('woff2');
   unicode-range: U+30-39; /* 0-9 */
-  font-feature-settings: 'tnum' 1; /* tabular figures */
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
 }
 
 /* Font definitions */
