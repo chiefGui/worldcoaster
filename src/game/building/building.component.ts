@@ -4,7 +4,6 @@ import type { ComponentSchema } from '@ecs/component'
 
 export const BuildingStat = {
   capacity: 'capacity',
-  duration: 'duration',
   excitement: 'excitement',
   intensity: 'intensity',
   nauseaRating: 'nauseaRating',
@@ -53,7 +52,6 @@ export type BuildingDefinition = {
   icon?: string
   category: BuildingCategory
   capacity: number
-  duration: number
   appeal: number
   tags: BuildingTags
   on: BuildingOn

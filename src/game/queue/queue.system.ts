@@ -1,6 +1,7 @@
 import type { QuerySchema } from '@ecs/query'
 import { World } from '@ecs/world'
 import { System, After } from '@ecs/decorator'
+import { CONFIG } from '@framework/config'
 import { QueueComponent, Queue } from './queue.component'
 import { QueueAction } from './queue.action'
 import { GuestAction } from '../guest/guest.action'
@@ -26,11 +27,10 @@ export class QueueSystem {
       const guests = QueueAction.dequeue({ queueEntity, count: capacity, source: 'queue-system' })
 
       for (const guestEntity of guests) {
-        const rideDuration = Stat.getFinal(buildingEntity, 'duration')
         GuestAction.startRide({
           entity: guestEntity,
           buildingEntity,
-          duration: rideDuration,
+          duration: CONFIG.ride.duration,
           source: 'queue-system',
         })
       }

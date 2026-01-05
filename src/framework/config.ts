@@ -1,4 +1,7 @@
 export const CONFIG = {
+  ride: {
+    duration: 3, // seconds per ride cycle
+  },
   park: {
     name: 'My Park',
     initial: {

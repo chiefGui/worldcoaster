@@ -167,7 +167,6 @@ function InspectorPanel({ buildingEntity, onDemolish }: InspectorPanelProps) {
         {/* Quick Info */}
         <Section title="Info">
           <StatRow label="Capacity" value={`${def.capacity} guests`} />
-          <StatRow label="Ride Duration" value={`${def.duration} sec`} />
           {def.appeal > 0 && (
             <StatRow label="Park Appeal" value={`+${def.appeal}`} highlight />
           )}
