@@ -10,7 +10,7 @@ import { QueueAction } from '../queue/queue.action'
 import { Stat } from '@framework/stat/stat.component'
 import { StatAction } from '@framework/stat/stat.action'
 
-const NEED_DECAY_RATE = 1
+const NEED_DECAY_RATE = 100 / 30 // 30 seconds from full to empty
 
 @System('guest')
 export class GuestSystem {
@@ -85,12 +85,12 @@ export class GuestSystem {
     }
   }
 
-  private static decayNeeds(entity: number): void {
+  private static decayNeeds(entity: number, dt: number): void {
     const needs = [GuestStat.happiness, GuestStat.hunger, GuestStat.thirst, GuestStat.energy, GuestStat.comfort] as const
     for (const need of needs) {
       const current = Stat.get(entity, need)
       if (current > 0) {
-        StatAction.change({ entity, statId: need, delta: -NEED_DECAY_RATE, source: 'guest-system' })
+        StatAction.change({ entity, statId: need, delta: -NEED_DECAY_RATE * dt, source: 'guest-system' })
       }
     }
   }
@@ -113,7 +113,7 @@ export class GuestSystem {
           continue
       }
 
-      this.decayNeeds(entity)
+      this.decayNeeds(entity, dt)
 
       const happiness = Stat.get(entity, GuestStat.happiness)
       if (happiness <= 0) {
