@@ -115,7 +115,6 @@ function InspectorPanel({ buildingEntity, onDemolish }: InspectorPanelProps) {
   const def = BuildingRegistry.get(building.id)
   if (!def) return null
 
-  const buildCost = BuildingAction.getBuildCost(def)
   const refund = BuildingAction.getRefundAmount(buildingEntity)
   const fee = BuildingAction.getFee(def)
 
@@ -154,8 +153,6 @@ function InspectorPanel({ buildingEntity, onDemolish }: InspectorPanelProps) {
         {/* Building Info Section */}
         <Section title="Building Info">
           <StatRow label="Capacity" value={def.capacity} />
-          <StatRow label="Duration" value={`${def.duration}s`} />
-          <StatRow label="Original Cost" value={`$${buildCost}`} />
           {fee > 0 && <StatRow label="Entry Fee" value={`$${fee}`} />}
         </Section>
 
