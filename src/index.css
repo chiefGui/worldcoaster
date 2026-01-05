@@ -74,6 +74,99 @@ body {
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
 }
 
+/* Classy theme - luxurious gold and warm grays */
+[data-theme='classy'] {
+  /* Background colors */
+  --color-bg-primary: #0c0a09;
+  --color-bg-secondary: #1c1917;
+  --color-bg-tertiary: #292524;
+
+  /* Text colors */
+  --color-text-primary: #fef3c7;
+  --color-text-secondary: #d6d3d1;
+  --color-text-muted: #a8a29e;
+
+  /* Accent colors */
+  --color-accent: #d97706;
+  --color-accent-hover: #b45309;
+
+  /* Border colors */
+  --color-border: #44403c;
+  --color-border-subtle: #292524;
+
+  /* Semantic colors */
+  --color-success: #84cc16;
+  --color-warning: #fbbf24;
+  --color-error: #dc2626;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+}
+
+/* Lollipop theme - playful purple candy vibes */
+[data-theme='lollipop'] {
+  /* Background colors */
+  --color-bg-primary: #0d0015;
+  --color-bg-secondary: #1a0a2e;
+  --color-bg-tertiary: #2d1b4e;
+
+  /* Text colors */
+  --color-text-primary: #faf5ff;
+  --color-text-secondary: #c4b5fd;
+  --color-text-muted: #a78bfa;
+
+  /* Accent colors */
+  --color-accent: #e879f9;
+  --color-accent-hover: #d946ef;
+
+  /* Border colors */
+  --color-border: #581c87;
+  --color-border-subtle: #3b0764;
+
+  /* Semantic colors */
+  --color-success: #4ade80;
+  --color-warning: #fcd34d;
+  --color-error: #fb7185;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.6);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.6);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.6);
+}
+
+/* Forest theme - deep earthy greens */
+[data-theme='forest'] {
+  /* Background colors */
+  --color-bg-primary: #020c02;
+  --color-bg-secondary: #0a1f0a;
+  --color-bg-tertiary: #14351a;
+
+  /* Text colors */
+  --color-text-primary: #ecfdf5;
+  --color-text-secondary: #86efac;
+  --color-text-muted: #4ade80;
+
+  /* Accent colors */
+  --color-accent: #22c55e;
+  --color-accent-hover: #16a34a;
+
+  /* Border colors */
+  --color-border: #166534;
+  --color-border-subtle: #14532d;
+
+  /* Semantic colors */
+  --color-success: #4ade80;
+  --color-warning: #fbbf24;
+  --color-error: #f87171;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.6);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.6);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.6);
+}
+
 /* Tailwind 4 theme configuration */
 @theme {
   /* Map CSS variables to Tailwind utilities */

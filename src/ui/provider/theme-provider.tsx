@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react'
 
-export type ThemeId = 'gray' | 'slate'
+export type ThemeId = 'gray' | 'slate' | 'classy' | 'lollipop' | 'forest'
 
 export type ThemeDefinition = {
   id: ThemeId
@@ -10,6 +10,9 @@ export type ThemeDefinition = {
 export const themes: ThemeDefinition[] = [
   { id: 'gray', name: 'Gray' },
   { id: 'slate', name: 'Slate' },
+  { id: 'classy', name: 'Classy' },
+  { id: 'lollipop', name: 'Lollipop' },
+  { id: 'forest', name: 'Forest' },
 ]
 
 type ThemeContextValue = {
