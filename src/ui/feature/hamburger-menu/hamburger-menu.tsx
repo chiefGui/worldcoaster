@@ -6,7 +6,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { Menu, Settings, HelpCircle, Volume2, Palette, RotateCcw, AlertTriangle, Code, Activity } from 'lucide-react'
+import { Menu, Settings, HelpCircle, Volume2, Palette, RotateCcw, AlertTriangle, Check, Code, Activity } from 'lucide-react'
 import * as Ariakit from '@ariakit/react'
 import { Drawer } from '@ui/component/drawer'
 import { NavigationMenu } from '@ui/component/navigation-menu'
@@ -22,6 +22,7 @@ import { Modifier, ModifierComponent } from '@framework/modifier/modifier.compon
 import { Stat } from '@framework/stat/stat.component'
 import { CONFIG } from '@framework/config'
 import { cn } from '@ui/lib/cn'
+import { useTheme } from '@ui/provider/theme-provider'
 
 type HamburgerMenuContextValue = {
   open: (panelId?: string) => void
@@ -173,9 +174,7 @@ function DefaultMenuContent({ onClose }: DefaultMenuContentProps) {
       {/* Appearance Settings Panel */}
       <NavigationMenu.Panel id="settings/appearance" parent="settings" title="Appearance">
         <NavigationMenu.Header />
-        <div className="flex-1 overflow-y-auto p-4">
-          <p className="text-sm text-text-secondary">Appearance settings coming soon...</p>
-        </div>
+        <AppearanceSettingsContent />
       </NavigationMenu.Panel>
 
       {/* Dev Panel */}
@@ -214,6 +213,35 @@ function DefaultMenuContent({ onClose }: DefaultMenuContentProps) {
         <ResetConfirmationContent onClose={onClose} />
       </NavigationMenu.Panel>
     </>
+  )
+}
+
+function AppearanceSettingsContent() {
+  const { theme, setTheme, themes } = useTheme()
+
+  return (
+    <div className="flex-1 overflow-y-auto p-4">
+      <div className="space-y-2">
+        <h3 className="text-sm font-medium text-text-secondary mb-3">Theme</h3>
+        {themes.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => setTheme(t.id)}
+            className={cn(
+              'w-full flex items-center justify-between px-4 py-3 rounded-lg',
+              'text-left text-sm font-medium transition-colors',
+              theme === t.id
+                ? 'bg-accent/10 text-accent border border-accent/30'
+                : 'bg-bg-tertiary text-text-primary hover:bg-bg-tertiary/80 border border-transparent'
+            )}
+          >
+            {t.name}
+            {theme === t.id && <Check className="size-4" />}
+          </button>
+        ))}
+      </div>
+    </div>
   )
 }
 
