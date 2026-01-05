@@ -2,16 +2,18 @@ import { Header } from '@ui/feature/header/header'
 import { ParkGrid } from '@ui/feature/park-grid/park-grid'
 import { BuildingPlacement } from '@ui/feature/building-placement/building-placement'
 import { HamburgerMenu } from '@ui/feature/hamburger-menu'
+import { Footer } from '@ui/feature/footer/footer'
 
 export function GameLayout() {
   return (
     <BuildingPlacement.Provider>
       <HamburgerMenu.Root>
-        <div className="min-h-screen bg-bg-primary flex flex-col">
+        <div className="min-h-screen bg-bg-primary flex flex-col pb-16">
           <Header />
           <main className="flex-1">
             <ParkGrid />
           </main>
+          <Footer />
         </div>
         <HamburgerMenu.Content />
       </HamburgerMenu.Root>
