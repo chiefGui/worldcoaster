@@ -19,14 +19,16 @@ export function LockedLandRow({ slotsPerRow }: LockedLandRowProps) {
   const parkEntity = Park.entity()
   const parkStats = useComponent(parkEntity, StatComponent)
   const money = parkStats?.values[ParkStat.money] ?? 0
+  const unlockedRows = parkStats?.values[ParkStat.unlockedLandRows] ?? 1
 
-  const price = useMemo(() => LandAction.getNextRowPrice(), [parkStats])
+  // Recalculate price when unlockedRows changes
+  const price = useMemo(() => LandAction.getNextRowPrice(), [unlockedRows])
   const canAfford = money >= price
 
   const handlePurchase = useCallback(() => {
     const success = LandAction.expand()
     if (success) {
-      Toast.success(`New land acquired for ${Format.money(price)}!`)
+      Toast.success(`New land acquired for ${Format.moneyCompact(price)}!`)
       confirmDialog.hide()
     } else {
       Toast.error('Unable to acquire land')
@@ -73,7 +75,7 @@ export function LockedLandRow({ slotsPerRow }: LockedLandRowProps) {
           )}>
             <LockIcon className="w-3.5 h-3.5" />
             <span>Expand Land</span>
-            <span className="font-semibold">{Format.money(price)}</span>
+            <span className="font-semibold">{Format.moneyCompact(price)}</span>
           </div>
         </div>
       </button>
@@ -82,10 +84,10 @@ export function LockedLandRow({ slotsPerRow }: LockedLandRowProps) {
         <ConfirmationDialog.Content>
           <ConfirmationDialog.Heading>Expand Your Park</ConfirmationDialog.Heading>
           <ConfirmationDialog.Description>
-            Acquire {slotsPerRow} new land plots for {Format.money(price)}?
+            Acquire {slotsPerRow} new land plots for {Format.moneyCompact(price)}?
             {!canAfford && (
               <span className="block mt-2 text-error">
-                You need {Format.money(price - money)} more to afford this.
+                You need {Format.moneyCompact(price - money)} more to afford this.
               </span>
             )}
           </ConfirmationDialog.Description>
