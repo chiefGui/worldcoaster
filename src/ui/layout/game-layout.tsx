@@ -1,4 +1,5 @@
 import { Header } from '@ui/feature/header/header'
+import { StatsBar } from '@ui/feature/stats-bar/stats-bar'
 import { ParkGrid } from '@ui/feature/park-grid/park-grid'
 import { BuildingPlacement } from '@ui/feature/building-placement/building-placement'
 import { HamburgerMenu } from '@ui/feature/hamburger-menu'
@@ -9,6 +10,7 @@ export function GameLayout() {
       <HamburgerMenu.Root>
         <div className="min-h-screen bg-bg-primary flex flex-col">
           <Header />
+          <StatsBar />
           <main className="flex-1">
             <ParkGrid />
           </main>
