@@ -2,7 +2,7 @@ import type { Entity } from '@ecs/entity'
 import { BuildingRegistry, type BuildingId } from '@game/building/building.component'
 import { BuildingAction } from '@game/building/building.action'
 import { buttonVariants } from '@ui/component/button'
-import { Sheet } from '@ui/component/sheet'
+import { Drawer } from '@ui/component/drawer'
 
 export type BuildingPickerProps = {
   plotEntity: Entity | null
@@ -14,11 +14,11 @@ export function BuildingPicker({ plotEntity, onSelect }: BuildingPickerProps) {
 
   return (
     <div className="p-4 pb-8">
-      <div className="flex items-center justify-between mb-4">
-        <Sheet.Heading>Build</Sheet.Heading>
-        <Sheet.Close className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
+      <div className="flex items-center justify-between mb-4 border-b border-border pb-4">
+        <Drawer.Heading>Build</Drawer.Heading>
+        <Drawer.Close className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
           Close
-        </Sheet.Close>
+        </Drawer.Close>
       </div>
       {!plotEntity && (
         <p className="text-text-secondary text-sm mb-4">
