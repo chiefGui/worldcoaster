@@ -6,6 +6,15 @@ export const CONFIG = {
       attractiveness: 0,
       entryFee: 5,
       novelty: 0,
+      unlockedLandRows: 1,
+    },
+  },
+  land: {
+    slotsPerRow: 6,
+    maxRows: 50,
+    price: {
+      base: 1000,
+      multiplier: 2, // exponential: base * 2^(row-2)
     },
   },
   novelty: {

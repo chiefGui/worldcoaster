@@ -10,6 +10,7 @@ export type ParkInitParams = {
   initialAttractiveness?: number
   initialEntryFee?: number
   initialNovelty?: number
+  initialUnlockedLandRows?: number
 }
 
 export class ParkAction {
@@ -20,6 +21,7 @@ export class ParkAction {
       initialAttractiveness = CONFIG.park.initial.attractiveness,
       initialEntryFee = CONFIG.park.initial.entryFee,
       initialNovelty = CONFIG.park.initial.novelty,
+      initialUnlockedLandRows = CONFIG.park.initial.unlockedLandRows,
     } = params
 
     const entity = World.spawn()
@@ -32,6 +34,7 @@ export class ParkAction {
     StatAction.set({ entity, statId: ParkStat.attractiveness, value: initialAttractiveness, source: 'park-init' })
     StatAction.set({ entity, statId: ParkStat.entryFee, value: initialEntryFee, source: 'park-init' })
     StatAction.set({ entity, statId: ParkStat.novelty, value: initialNovelty, source: 'park-init' })
+    StatAction.set({ entity, statId: ParkStat.unlockedLandRows, value: initialUnlockedLandRows, source: 'park-init' })
   }
 
   static addMoney(params: { amount: number; source: string }): void {
