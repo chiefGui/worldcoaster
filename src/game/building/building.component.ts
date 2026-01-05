@@ -79,6 +79,15 @@ export class BuildingRegistry {
   }
 }
 
+export type BuildingStatsData = {
+  visits: number
+  revenue: number
+}
+
+export const BuildingStatsComponent: ComponentSchema<BuildingStatsData> = World.registerComponent<BuildingStatsData>(
+  'BuildingStats'
+)
+
 export class Building {
   static get(entity: Entity): BuildingData | undefined {
     return World.get(entity, BuildingComponent)
@@ -97,5 +106,25 @@ export class Building {
   static plot(entity: Entity): Entity | undefined {
     const building = World.get(entity, BuildingComponent)
     return building?.plotEntity
+  }
+
+  static stats(entity: Entity): BuildingStatsData | undefined {
+    return World.get(entity, BuildingStatsComponent)
+  }
+
+  static recordVisit(entity: Entity): void {
+    const stats = World.get(entity, BuildingStatsComponent)
+    if (stats) {
+      stats.visits++
+      World.notifyChange(entity, BuildingStatsComponent)
+    }
+  }
+
+  static addRevenue(entity: Entity, amount: number): void {
+    const stats = World.get(entity, BuildingStatsComponent)
+    if (stats && amount > 0) {
+      stats.revenue += amount
+      World.notifyChange(entity, BuildingStatsComponent)
+    }
   }
 }

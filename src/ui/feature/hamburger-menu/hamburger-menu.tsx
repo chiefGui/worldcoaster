@@ -236,7 +236,7 @@ function ThemeSwatch({ colors }: { colors: { bg: string; accent: string; text: s
   )
 }
 
-function FontPreview({ fontFamily, name }: { fontFamily: string; name: string }) {
+function FontPreview({ fontFamily }: { fontFamily: string }) {
   return (
     <div
       className="size-10 rounded-lg overflow-hidden flex-shrink-0 bg-bg-tertiary ring-1 ring-white/10 flex items-center justify-center"
@@ -331,7 +331,7 @@ function AppearanceSettingsContent() {
               isLast={index === fonts.length - 1}
               onClick={() => setFont(f.id)}
             >
-              <FontPreview fontFamily={f.preview} name={f.name} />
+              <FontPreview fontFamily={f.preview} />
               <span
                 className={cn('flex-1 text-sm font-medium', preferences.font === f.id ? 'text-accent' : 'text-text-primary')}
                 style={{ fontFamily: f.preview }}

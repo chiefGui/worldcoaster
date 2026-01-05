@@ -66,6 +66,12 @@ export class GuestSystem {
 
     if (Queue.isFull(queueEntity)) return
 
+    // Track revenue from entry fee
+    const fee = BuildingAction.getFee(def)
+    if (fee > 0) {
+      Building.addRevenue(building, fee)
+    }
+
     BuildingAction.applyParkEffects(def.on.visit?.park, def.id)
     QueueAction.join({ queueEntity, guestEntity: entity, source: 'guest-system' })
     GuestAction.changeState({ entity, newState: GuestState.queuing, target: queueEntity, source: 'guest-system' })
@@ -80,6 +86,8 @@ export class GuestSystem {
         if (def) {
           BuildingAction.applyGuestEffects(entity, def.on.visit?.guest, def.id)
         }
+        // Track completed visit
+        Building.recordVisit(target)
       }
       GuestAction.changeState({ entity, newState: GuestState.idle, target: null, source: 'guest-system' })
     }
