@@ -26,7 +26,7 @@ export class QueueSystem {
       const guests = QueueAction.dequeue({ queueEntity, count: capacity, source: 'queue-system' })
 
       for (const guestEntity of guests) {
-        const rideDuration = Stat.getFinal(buildingEntity, 'rideDuration')
+        const rideDuration = Stat.getFinal(buildingEntity, 'duration')
         GuestAction.startRide({
           entity: guestEntity,
           buildingEntity,
