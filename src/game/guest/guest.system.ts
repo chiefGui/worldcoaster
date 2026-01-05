@@ -86,7 +86,7 @@ export class GuestSystem {
   }
 
   private static decayNeeds(entity: number): void {
-    const needs = [GuestStat.hunger, GuestStat.thirst, GuestStat.energy, GuestStat.comfort] as const
+    const needs = [GuestStat.happiness, GuestStat.hunger, GuestStat.thirst, GuestStat.energy, GuestStat.comfort] as const
     for (const need of needs) {
       const current = Stat.get(entity, need)
       if (current > 0) {
@@ -108,6 +108,9 @@ export class GuestSystem {
         case GuestState.riding:
           this.processRidingGuest(entity, dt)
           break
+        case GuestState.leaving:
+          World.despawn(entity)
+          continue
       }
 
       this.decayNeeds(entity)

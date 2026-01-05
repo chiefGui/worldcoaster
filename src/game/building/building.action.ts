@@ -2,9 +2,12 @@ import type { Entity } from '@ecs/entity'
 import { World } from '@ecs/world'
 import { StatComponent } from '@framework/stat/stat.component'
 import { StatAction } from '@framework/stat/stat.action'
-import { Park } from '@game/park'
+import { ModifierAction } from '@framework/modifier/modifier.action'
+import { Park, ParkStat } from '@game/park'
 import { ParkAction } from '@game/park'
+import { CONFIG } from '@framework/config'
 import {
+  Building,
   BuildingComponent,
   BuildingRegistry,
   type BuildingId,
@@ -39,6 +42,8 @@ export class BuildingAction {
     StatAction.set({ entity, statId: 'duration', value: def.duration, source })
 
     this.applyParkEffects(def.on.build?.park, source)
+    this.applyAppeal(entity, def)
+    this.boostNovelty(def)
 
     World.set(plotEntity, PlotComponent, { buildingEntity: entity })
 
@@ -84,5 +89,37 @@ export class BuildingAction {
     for (const [statId, amount] of Object.entries(effects)) {
       StatAction.change({ entity: guestEntity, statId, delta: amount, source })
     }
+  }
+
+  private static applyAppeal(buildingEntity: Entity, def: BuildingDefinition): void {
+    if (def.appeal <= 0) return
+    ModifierAction.apply({
+      targetEntity: Park.entity(),
+      statId: ParkStat.attractiveness,
+      phase: 'flat_add',
+      value: def.appeal,
+      source: `building:${def.id}:${buildingEntity}`,
+    })
+  }
+
+  private static boostNovelty(def: BuildingDefinition): void {
+    if (def.category !== 'ride') return
+
+    const count = this.countBuildingsOfType(def.id)
+    const boost = Math.max(CONFIG.novelty.boost.floor, Math.floor(CONFIG.novelty.boost.base / count))
+
+    const current = Park.novelty()
+    const newValue = Math.min(current + boost, CONFIG.novelty.max)
+    ParkAction.setNovelty({ value: newValue, source: `building:${def.id}` })
+  }
+
+  private static buildingQuery = World.createQuery([BuildingComponent])
+
+  private static countBuildingsOfType(buildingId: BuildingId): number {
+    let count = 0
+    for (const entity of World.query(this.buildingQuery)) {
+      if (Building.id(entity) === buildingId) count++
+    }
+    return count
   }
 }

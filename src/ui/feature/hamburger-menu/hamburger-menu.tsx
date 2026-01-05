@@ -6,13 +6,21 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { Menu, Settings, HelpCircle, Volume2, Palette, RotateCcw, AlertTriangle, Check } from 'lucide-react'
+import { Menu, Settings, HelpCircle, Volume2, Palette, RotateCcw, AlertTriangle, Check, Code, Activity } from 'lucide-react'
 import * as Ariakit from '@ariakit/react'
 import { Drawer } from '@ui/component/drawer'
 import { NavigationMenu } from '@ui/component/navigation-menu'
 import { Toast } from '@ui/component/toast'
+import { World } from '@ecs/world'
+import { useTick } from '@ecs/react/use-world'
 import { Persistence } from '@ecs/persistence/persistence'
 import { Game } from '@framework/setup'
+import { Park, ParkStat } from '@game/park/park.component'
+import { GuestComponent } from '@game/guest/guest.component'
+import { BuildingComponent } from '@game/building/building.component'
+import { Modifier, ModifierComponent } from '@framework/modifier/modifier.component'
+import { Stat } from '@framework/stat/stat.component'
+import { CONFIG } from '@framework/config'
 import { cn } from '@ui/lib/cn'
 import { useTheme } from '@ui/provider/theme-provider'
 
@@ -124,6 +132,11 @@ function DefaultMenuContent({ onClose }: DefaultMenuContentProps) {
               Help
             </NavigationMenu.Item>
           </NavigationMenu.Section>
+          <NavigationMenu.Section>
+            <NavigationMenu.Item to="dev" icon={<Code className="size-5" />}>
+              Dev
+            </NavigationMenu.Item>
+          </NavigationMenu.Section>
         </div>
       </NavigationMenu.Panel>
 
@@ -147,14 +160,6 @@ function DefaultMenuContent({ onClose }: DefaultMenuContentProps) {
               Appearance
             </NavigationMenu.Item>
           </NavigationMenu.Section>
-          <NavigationMenu.Section title="Danger Zone">
-            <NavigationMenu.Item
-              to="settings/reset"
-              icon={<RotateCcw className="size-5" />}
-            >
-              Reset Progress
-            </NavigationMenu.Item>
-          </NavigationMenu.Section>
         </div>
       </NavigationMenu.Panel>
 
@@ -172,8 +177,38 @@ function DefaultMenuContent({ onClose }: DefaultMenuContentProps) {
         <AppearanceSettingsContent />
       </NavigationMenu.Panel>
 
+      {/* Dev Panel */}
+      <NavigationMenu.Panel id="dev" parent="root" title="Dev">
+        <NavigationMenu.Header />
+        <div className="flex-1 overflow-y-auto">
+          <NavigationMenu.Section>
+            <NavigationMenu.Item
+              to="dev/stats"
+              icon={<Activity className="size-5" />}
+              description="View all game variables"
+            >
+              Debug Stats
+            </NavigationMenu.Item>
+          </NavigationMenu.Section>
+          <NavigationMenu.Section title="Danger Zone">
+            <NavigationMenu.Item
+              to="dev/reset"
+              icon={<RotateCcw className="size-5" />}
+            >
+              Reset Progress
+            </NavigationMenu.Item>
+          </NavigationMenu.Section>
+        </div>
+      </NavigationMenu.Panel>
+
+      {/* Debug Stats Panel */}
+      <NavigationMenu.Panel id="dev/stats" parent="dev" title="Debug Stats">
+        <NavigationMenu.Header />
+        <DebugStatsContent />
+      </NavigationMenu.Panel>
+
       {/* Reset Progress Confirmation Panel */}
-      <NavigationMenu.Panel id="settings/reset" parent="settings" title="Reset Progress">
+      <NavigationMenu.Panel id="dev/reset" parent="dev" title="Reset Progress">
         <NavigationMenu.Header />
         <ResetConfirmationContent onClose={onClose} />
       </NavigationMenu.Panel>
@@ -206,6 +241,133 @@ function AppearanceSettingsContent() {
           </button>
         ))}
       </div>
+    </div>
+  )
+}
+
+function DebugStatsContent() {
+  const guestQuery = World.createQuery([GuestComponent])
+  const buildingQuery = World.createQuery([BuildingComponent])
+
+  const stats = useTick(useCallback(() => {
+    const parkEntity = Park.entity()
+    const guestCount = World.query(guestQuery).size
+    const buildingCount = World.query(buildingQuery).size
+    const modifiers = Modifier.getForStat(parkEntity, ParkStat.attractiveness)
+      .map(e => World.get(e, ModifierComponent))
+      .filter((m): m is NonNullable<typeof m> => m !== undefined)
+
+    return {
+      money: Park.money(),
+      attractivenessBase: Stat.get(parkEntity, ParkStat.attractiveness),
+      attractivenessFinal: Park.attractivenessFinal(),
+      novelty: Park.novelty(),
+      entryFee: Park.entryFee(),
+      guestCount,
+      buildingCount,
+      modifiers,
+    }
+  }, []))
+
+  return (
+    <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
+      {/* Park Stats */}
+      <section>
+        <h3 className="text-xs font-medium text-text-secondary uppercase tracking-wide mb-2">
+          Park
+        </h3>
+        <div className="rounded-lg bg-bg-secondary p-3 font-mono text-sm space-y-1">
+          <div className="flex justify-between">
+            <span className="text-text-secondary">money</span>
+            <span className="text-text-primary">${stats.money.toLocaleString()}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-text-secondary">attractiveness (base)</span>
+            <span className="text-text-primary">{stats.attractivenessBase}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-text-secondary">attractiveness (final)</span>
+            <span className="text-text-primary">{stats.attractivenessFinal}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-text-secondary">novelty</span>
+            <span className="text-text-primary">{stats.novelty.toFixed(1)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-text-secondary">entryFee</span>
+            <span className="text-text-primary">${stats.entryFee}</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Spawn Rate */}
+      <section>
+        <h3 className="text-xs font-medium text-text-secondary uppercase tracking-wide mb-2">
+          Spawn Rate
+        </h3>
+        <div className="rounded-lg bg-bg-secondary p-3 font-mono text-sm space-y-2">
+          <div className="flex justify-between">
+            <span className="text-text-secondary">guests/sec</span>
+            <span className="text-text-primary">
+              {((stats.attractivenessFinal + stats.novelty) * CONFIG.spawn.factor).toFixed(2)}
+            </span>
+          </div>
+          <div className="border-t border-border-secondary pt-2 space-y-1 text-xs">
+            <div className="flex justify-between text-text-secondary">
+              <span>attractiveness</span>
+              <span>{stats.attractivenessFinal}</span>
+            </div>
+            <div className="flex justify-between text-text-secondary">
+              <span>+ novelty</span>
+              <span>{stats.novelty.toFixed(1)}</span>
+            </div>
+            <div className="flex justify-between text-text-secondary">
+              <span>= total</span>
+              <span>{(stats.attractivenessFinal + stats.novelty).toFixed(1)}</span>
+            </div>
+            <div className="flex justify-between text-text-secondary">
+              <span>× factor</span>
+              <span>{CONFIG.spawn.factor}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Entity Counts */}
+      <section>
+        <h3 className="text-xs font-medium text-text-secondary uppercase tracking-wide mb-2">
+          Entities
+        </h3>
+        <div className="rounded-lg bg-bg-secondary p-3 font-mono text-sm space-y-1">
+          <div className="flex justify-between">
+            <span className="text-text-secondary">guests</span>
+            <span className="text-text-primary">{stats.guestCount}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-text-secondary">buildings</span>
+            <span className="text-text-primary">{stats.buildingCount}</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Attractiveness Modifiers */}
+      <section>
+        <h3 className="text-xs font-medium text-text-secondary uppercase tracking-wide mb-2">
+          Attractiveness Modifiers
+        </h3>
+        <div className="rounded-lg bg-bg-secondary p-3 font-mono text-xs space-y-1">
+          {stats.modifiers.length === 0 ? (
+            <p className="text-text-tertiary">No modifiers</p>
+          ) : (
+            stats.modifiers.map((mod, i) => (
+              <div key={i} className="flex justify-between gap-2">
+                <span className="text-text-secondary truncate">{mod.source}</span>
+                <span className="text-text-primary shrink-0">+{mod.value}</span>
+              </div>
+            ))
+          )}
+        </div>
+      </section>
     </div>
   )
 }
