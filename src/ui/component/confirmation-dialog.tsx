@@ -1,11 +1,10 @@
-import { forwardRef, useLayoutEffect, type ReactNode } from 'react'
+import { forwardRef, type ReactNode } from 'react'
 import * as Ariakit from '@ariakit/react'
 import {
   ConfirmationDialog as ConfirmationDialogPrimitive,
   useConfirmationDialogStore,
   type ConfirmationDialogStore,
 } from '@ui/primitive/confirmation-dialog'
-import { BackdropManager } from '@ui/primitive/backdrop'
 import { cn } from '@ui/lib/cn'
 
 export type ConfirmationDialogProps = {
@@ -14,15 +13,6 @@ export type ConfirmationDialogProps = {
 }
 
 function Root({ children, store }: ConfirmationDialogProps) {
-  const open = Ariakit.useStoreState(store, 'open')
-
-  useLayoutEffect(() => {
-    if (open) {
-      BackdropManager.show()
-      return () => BackdropManager.hide()
-    }
-  }, [open])
-
   return <ConfirmationDialogPrimitive.Root store={store}>{children}</ConfirmationDialogPrimitive.Root>
 }
 
@@ -54,8 +44,11 @@ const Content = forwardRef<HTMLDivElement, ConfirmationDialogContentProps>(
     return (
       <Ariakit.Dialog
         ref={ref}
+        backdrop={
+          <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm transition-opacity duration-200" />
+        }
         className={cn(
-          'fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2',
+          'fixed left-1/2 top-1/2 z-[60] -translate-x-1/2 -translate-y-1/2',
           'w-[calc(100%-2rem)] max-w-sm',
           'bg-bg-secondary border border-border rounded-2xl',
           'shadow-xl p-6',
