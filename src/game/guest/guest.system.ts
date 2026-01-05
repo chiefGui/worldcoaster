@@ -81,15 +81,15 @@ export class GuestSystem {
     const finished = GuestAction.tickRide({ entity, dt })
     if (finished) {
       const target = Guest.target(entity)
-      if (target) {
+      const stateChanged = GuestAction.changeState({ entity, newState: GuestState.idle, target: null, source: 'guest-system' })
+      // Only record visit and apply effects if state change succeeded
+      if (stateChanged && target) {
         const def = Building.definition(target)
         if (def) {
           BuildingAction.applyGuestEffects(entity, def.on.visit?.guest, def.id)
         }
-        // Track completed visit
         Building.recordVisit(target)
       }
-      GuestAction.changeState({ entity, newState: GuestState.idle, target: null, source: 'guest-system' })
     }
   }
 
