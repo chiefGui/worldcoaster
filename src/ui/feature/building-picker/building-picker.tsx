@@ -3,25 +3,15 @@ import { BuildingRegistry, type BuildingId } from '@game/building/building.compo
 import { BuildingAction } from '@game/building/building.action'
 import { buttonVariants } from '@ui/component/button'
 import { Sheet } from '@ui/component/sheet'
-import { Toast } from '@ui/component/toast'
 
 export type BuildingPickerProps = {
   plotEntity: Entity | null
+  onSelect: (buildingId: BuildingId) => void
   onClose: () => void
 }
 
-export function BuildingPicker({ plotEntity, onClose }: BuildingPickerProps) {
+export function BuildingPicker({ plotEntity, onSelect, onClose }: BuildingPickerProps) {
   const buildings = BuildingRegistry.all()
-
-  const handleSelect = (buildingId: BuildingId) => {
-    if (!plotEntity) return
-    const building = BuildingAction.build({ plotEntity, buildingId })
-    if (building) {
-      const def = BuildingRegistry.get(buildingId)
-      Toast.success(`${def?.name ?? 'Building'} built!`)
-    }
-    onClose()
-  }
 
   return (
     <div className="p-4 pb-8">
@@ -32,8 +22,8 @@ export function BuildingPicker({ plotEntity, onClose }: BuildingPickerProps) {
         </Sheet.Close>
       </div>
       {!plotEntity && (
-        <p className="text-text-muted text-sm mb-4">
-          Tap an empty plot on the map to place a building.
+        <p className="text-text-secondary text-sm mb-4">
+          Select a building, then tap a plot to place it.
         </p>
       )}
       <div className="grid grid-cols-2 gap-3">
@@ -43,9 +33,8 @@ export function BuildingPicker({ plotEntity, onClose }: BuildingPickerProps) {
             <button
               key={building.id}
               type="button"
-              onClick={() => handleSelect(building.id)}
-              disabled={!plotEntity}
-              className="p-4 rounded-lg bg-bg-tertiary border border-border-subtle hover:border-accent transition-colors text-left flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-border-subtle"
+              onClick={() => onSelect(building.id)}
+              className="p-4 rounded-lg bg-bg-tertiary border border-border-subtle hover:border-accent transition-colors text-left flex items-center gap-3"
             >
               {building.icon && (
                 <img src={building.icon} alt="" className="w-10 h-10 flex-shrink-0" />
