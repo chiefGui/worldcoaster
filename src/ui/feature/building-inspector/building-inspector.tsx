@@ -1,6 +1,7 @@
 import { useState, useCallback, createContext, useContext, type ReactNode } from 'react'
 import type { Entity } from '@ecs/entity'
 import { useComponent } from '@ecs/react/use-component'
+import { useTick } from '@ecs/react/use-world'
 import {
   BuildingComponent,
   BuildingStatsComponent,
@@ -8,6 +9,7 @@ import {
 } from '@game/building/building.component'
 import { BuildingAction } from '@game/building/building.action'
 import { QueueComponent } from '@game/queue/queue.component'
+import { GuestComponent, Guest, GuestState } from '@game/guest/guest.component'
 import { World } from '@ecs/world'
 import { Drawer } from '@ui/component/drawer'
 import { ConfirmationDialog } from '@ui/component/confirmation-dialog'
@@ -110,16 +112,22 @@ function InspectorPanel({ buildingEntity, onDemolish }: InspectorPanelProps) {
   const building = useComponent(buildingEntity, BuildingComponent)
   const stats = useComponent(buildingEntity, BuildingStatsComponent)
 
+  // Live stats that update every tick
+  const liveStats = useTick(
+    useCallback(() => {
+      return {
+        riding: countGuestsRiding(buildingEntity),
+        queued: findQueueLength(buildingEntity),
+      }
+    }, [buildingEntity])
+  )
+
   if (!building) return null
 
   const def = BuildingRegistry.get(building.id)
   if (!def) return null
 
   const refund = BuildingAction.getRefundAmount(buildingEntity)
-  const fee = BuildingAction.getFee(def)
-
-  // Find queue for this building
-  const queueLength = findQueueLength(buildingEntity)
 
   return (
     <div className="flex flex-col h-full">
@@ -134,59 +142,50 @@ function InspectorPanel({ buildingEntity, onDemolish }: InspectorPanelProps) {
             </div>
           </div>
           <Drawer.Close className="size-8 flex items-center justify-center rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-tertiary transition-colors">
-            <svg className="size-5" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-            </svg>
+            &times;
           </Drawer.Close>
         </div>
       </div>
 
       {/* Content */}
       <div className="flex-1 overflow-auto p-4 space-y-4">
-        {/* Stats Section */}
-        <Section title="Statistics">
-          <StatRow label="Total Visits" value={stats?.visits ?? 0} />
-          <StatRow label="Revenue Generated" value={`$${stats?.revenue ?? 0}`} />
-          <StatRow label="Current Queue" value={queueLength} />
-        </Section>
+        {/* Live Activity - Big numbers */}
+        <div className="grid grid-cols-3 gap-2">
+          <LiveStat label="Riding" value={liveStats.riding} icon="🎢" />
+          <LiveStat label="Queued" value={liveStats.queued} icon="🚶" />
+          <LiveStat label="Total" value={stats?.visits ?? 0} icon="🎟️" />
+        </div>
 
-        {/* Building Info Section */}
-        <Section title="Building Info">
-          <StatRow label="Capacity" value={def.capacity} />
-          {fee > 0 && <StatRow label="Entry Fee" value={`$${fee}`} />}
-        </Section>
+        {/* Revenue */}
+        {(stats?.revenue ?? 0) > 0 && (
+          <div className="bg-success/10 rounded-lg p-3 text-center">
+            <div className="text-lg font-semibold text-success">${stats?.revenue ?? 0}</div>
+            <div className="text-xs text-success/80">Revenue Generated</div>
+          </div>
+        )}
 
-        {/* Effects Section */}
-        <Section title="Effects">
+        {/* Quick Info */}
+        <Section title="Info">
+          <StatRow label="Capacity" value={`${def.capacity} guests`} />
+          <StatRow label="Ride Duration" value={`${def.duration} sec`} />
           {def.appeal > 0 && (
-            <EffectRow label="Park Attractiveness" value={`+${def.appeal}`} positive />
-          )}
-          {def.on.tick?.park?.money && (
-            <EffectRow
-              label="Operating Cost"
-              value={`$${Math.abs(def.on.tick.park.money)}/day`}
-              positive={def.on.tick.park.money > 0}
-            />
-          )}
-          {def.on.visit?.guest && (
-            <>
-              {def.on.visit.guest.happiness && (
-                <EffectRow
-                  label="Guest Happiness"
-                  value={def.on.visit.guest.happiness > 0 ? `+${def.on.visit.guest.happiness}` : `${def.on.visit.guest.happiness}`}
-                  positive={def.on.visit.guest.happiness > 0}
-                />
-              )}
-              {def.on.visit.guest.energy && (
-                <EffectRow
-                  label="Guest Energy"
-                  value={def.on.visit.guest.energy > 0 ? `+${def.on.visit.guest.energy}` : `${def.on.visit.guest.energy}`}
-                  positive={def.on.visit.guest.energy > 0}
-                />
-              )}
-            </>
+            <StatRow label="Park Appeal" value={`+${def.appeal}`} highlight />
           )}
         </Section>
+
+        {/* Guest Effects */}
+        {def.on.visit?.guest && (
+          <Section title="Guest Effects">
+            {Object.entries(def.on.visit.guest).map(([stat, value]) => (
+              <EffectRow
+                key={stat}
+                label={stat.charAt(0).toUpperCase() + stat.slice(1)}
+                value={value > 0 ? `+${value}` : `${value}`}
+                positive={value > 0}
+              />
+            ))}
+          </Section>
+        )}
       </div>
 
       {/* Footer */}
@@ -235,6 +234,22 @@ function DemolishConfirmation({ buildingEntity, onConfirm }: DemolishConfirmatio
 
 // Helper Components
 
+type LiveStatProps = {
+  label: string
+  value: number
+  icon: string
+}
+
+function LiveStat({ label, value, icon }: LiveStatProps) {
+  return (
+    <div className="bg-bg-tertiary rounded-lg p-3 text-center">
+      <div className="text-lg mb-0.5">{icon}</div>
+      <div className="text-xl font-bold text-text-primary">{value}</div>
+      <div className="text-xs text-text-muted">{label}</div>
+    </div>
+  )
+}
+
 type SectionProps = {
   title: string
   children: ReactNode
@@ -246,7 +261,7 @@ function Section({ title, children }: SectionProps) {
       <h3 className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">
         {title}
       </h3>
-      <div className="bg-bg-tertiary rounded-lg divide-y divide-border">
+      <div className="bg-bg-tertiary rounded-lg divide-y divide-border-subtle">
         {children}
       </div>
     </div>
@@ -256,13 +271,16 @@ function Section({ title, children }: SectionProps) {
 type StatRowProps = {
   label: string
   value: string | number
+  highlight?: boolean
 }
 
-function StatRow({ label, value }: StatRowProps) {
+function StatRow({ label, value, highlight }: StatRowProps) {
   return (
     <div className="flex items-center justify-between px-3 py-2">
       <span className="text-sm text-text-secondary">{label}</span>
-      <span className="text-sm font-medium text-text-primary">{value}</span>
+      <span className={cn('text-sm font-medium', highlight ? 'text-accent' : 'text-text-primary')}>
+        {value}
+      </span>
     </div>
   )
 }
@@ -294,6 +312,18 @@ function findQueueLength(buildingEntity: Entity): number {
     }
   }
   return 0
+}
+
+// Helper to count guests currently riding at a building
+function countGuestsRiding(buildingEntity: Entity): number {
+  const guestQuery = World.createQuery([GuestComponent])
+  let count = 0
+  for (const guestEntity of World.query(guestQuery)) {
+    if (Guest.is(guestEntity, GuestState.riding) && Guest.target(guestEntity) === buildingEntity) {
+      count++
+    }
+  }
+  return count
 }
 
 export const BuildingInspector = {
