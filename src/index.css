@@ -1,5 +1,16 @@
 @import 'tailwindcss';
 
+/* Monospace font for numbers only */
+@font-face {
+  font-family: 'Mono Numbers';
+  src: local('ui-monospace'), local('SFMono-Regular'), local('Menlo'), local('Monaco'), local('Consolas'), local('Liberation Mono'), local('Courier New');
+  unicode-range: U+30-39; /* 0-9 */
+}
+
+body {
+  font-family: 'Mono Numbers', ui-sans-serif, system-ui, sans-serif;
+}
+
 /* Theme variables - easy to swap for different themes */
 :root {
   /* Background colors */
