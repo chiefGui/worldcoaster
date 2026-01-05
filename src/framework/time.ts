@@ -232,9 +232,10 @@ export class GameTime {
     return { elapsed: this.elapsed, totalDays: this.totalDays, paused: this.paused }
   }
 
-  static setState(state: GameTimeState): void {
-    this.elapsed = state.elapsed
-    this.totalDays = state.totalDays
-    this.paused = state.paused
+  static setState(state: GameTimeState & { day?: number }): void {
+    this.elapsed = state.elapsed ?? 0
+    // Support old saves that used 'day' instead of 'totalDays'
+    this.totalDays = state.totalDays ?? state.day ?? 0
+    this.paused = state.paused ?? false
   }
 }
