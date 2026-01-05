@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react'
 
-export type ThemeId = 'gray' | 'slate'
+export type ThemeId = 'dark' | 'light' | 'slate'
 
 export type ThemeDefinition = {
   id: ThemeId
@@ -8,7 +8,8 @@ export type ThemeDefinition = {
 }
 
 export const themes: ThemeDefinition[] = [
-  { id: 'gray', name: 'Gray' },
+  { id: 'dark', name: 'Dark' },
+  { id: 'light', name: 'Light' },
   { id: 'slate', name: 'Slate' },
 ]
 
@@ -37,7 +38,9 @@ type ThemeProviderProps = {
 export function ThemeProvider({ children }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<ThemeId>(() => {
     const stored = localStorage.getItem(STORAGE_KEY)
-    return (stored as ThemeId) || 'gray'
+    // Migrate old 'gray' theme to 'dark'
+    if (stored === 'gray') return 'dark'
+    return (stored as ThemeId) || 'dark'
   })
 
   const setTheme = useCallback((newTheme: ThemeId) => {

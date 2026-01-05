@@ -50,7 +50,7 @@ function Provider({ children }: ProviderProps) {
         <div
           className={cn(
             'fixed bottom-20 left-4 right-4 z-50',
-            'bg-accent text-white rounded-xl shadow-lg',
+            'bg-success text-success-foreground rounded-xl shadow-lg',
             'flex items-center gap-3 p-3',
             'animate-in slide-in-from-bottom-4 fade-in duration-200'
           )}
@@ -61,14 +61,14 @@ function Provider({ children }: ProviderProps) {
           <div className="flex-1 min-w-0">
             <div className="font-medium truncate">{content.title}</div>
             {content.subtitle && (
-              <div className="text-sm text-white/80">{content.subtitle}</div>
+              <div className="text-sm opacity-80">{content.subtitle}</div>
             )}
           </div>
           <button
             onClick={hide}
             className={cn(
               'p-2 rounded-lg flex-shrink-0',
-              'bg-white/20 hover:bg-white/30',
+              'bg-success-foreground/20 hover:bg-success-foreground/30',
               'transition-colors'
             )}
             aria-label="Dismiss"
