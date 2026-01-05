@@ -1,12 +1,11 @@
-import { useState, useCallback, createContext, useContext, type ReactNode } from 'react'
-import { X } from 'lucide-react'
+import { useState, useCallback, useEffect, createContext, useContext, type ReactNode } from 'react'
 import type { Entity } from '@ecs/entity'
 import { BuildingRegistry, type BuildingId } from '@game/building/building.component'
 import { BuildingAction } from '@game/building/building.action'
 import { BuildingPicker } from '@ui/feature/building-picker/building-picker'
-import { Sheet } from '@ui/component/sheet'
+import { Drawer } from '@ui/component/drawer'
 import { Toast } from '@ui/component/toast'
-import { cn } from '@ui/lib/cn'
+import { ActionBar } from '@ui/component/action-bar'
 
 type BuildingPlacementContextValue = {
   // Legacy: open picker for a specific plot (clicking on plot)
@@ -39,7 +38,8 @@ export type BuildingPlacementProviderProps = {
 function Provider({ children }: BuildingPlacementProviderProps) {
   const [selectedPlot, setSelectedPlot] = useState<Entity | null>(null)
   const [selectedBuilding, setSelectedBuilding] = useState<BuildingId | null>(null)
-  const sheetStore = Sheet.useStore()
+  const drawerStore = Drawer.useStore()
+  const actionBar = ActionBar.useActionBar()
 
   const isPlacementMode = selectedBuilding !== null
 
@@ -47,16 +47,21 @@ function Provider({ children }: BuildingPlacementProviderProps) {
   const openForPlot = useCallback(
     (plotEntity: Entity) => {
       setSelectedPlot(plotEntity)
-      sheetStore.show()
+      drawerStore.show()
     },
-    [sheetStore]
+    [drawerStore]
   )
 
   // New flow: open picker → select building → enter placement mode
   const openPicker = useCallback(() => {
     setSelectedPlot(null)
-    sheetStore.show()
-  }, [sheetStore])
+    drawerStore.show()
+  }, [drawerStore])
+
+  // Cancel placement mode
+  const cancelPlacement = useCallback(() => {
+    setSelectedBuilding(null)
+  }, [])
 
   // Called when user selects a building from the picker
   const handleBuildingSelect = useCallback(
@@ -73,9 +78,9 @@ function Provider({ children }: BuildingPlacementProviderProps) {
         // New flow: enter placement mode
         setSelectedBuilding(buildingId)
       }
-      sheetStore.hide()
+      drawerStore.hide()
     },
-    [selectedPlot, sheetStore]
+    [selectedPlot, drawerStore]
   )
 
   // Place the selected building on a plot (placement mode)
@@ -92,17 +97,24 @@ function Provider({ children }: BuildingPlacementProviderProps) {
     [selectedBuilding]
   )
 
-  // Cancel placement mode
-  const cancelPlacement = useCallback(() => {
-    setSelectedBuilding(null)
-  }, [])
-
-  const handleClose = useCallback(() => {
-    sheetStore.hide()
-    setSelectedPlot(null)
-  }, [sheetStore])
-
-  const buildingDef = selectedBuilding ? BuildingRegistry.get(selectedBuilding) : null
+  // Show/hide ActionBar based on placement mode
+  useEffect(() => {
+    if (selectedBuilding) {
+      const buildingDef = BuildingRegistry.get(selectedBuilding)
+      if (buildingDef) {
+        actionBar.show({
+          icon: buildingDef.icon ? (
+            <img src={buildingDef.icon} alt="" className="w-10 h-10" />
+          ) : undefined,
+          title: buildingDef.name,
+          subtitle: 'Tap an empty plot to place',
+          onDismiss: cancelPlacement,
+        })
+      }
+    } else {
+      actionBar.hide()
+    }
+  }, [selectedBuilding, actionBar, cancelPlacement])
 
   return (
     <BuildingPlacementContext.Provider
@@ -117,47 +129,15 @@ function Provider({ children }: BuildingPlacementProviderProps) {
     >
       {children}
 
-      {/* Building Picker Sheet */}
-      <Sheet.Root store={sheetStore}>
-        <Sheet.Content>
+      {/* Building Picker Drawer */}
+      <Drawer.Root store={drawerStore}>
+        <Drawer.Content side="right" className="flex flex-col">
           <BuildingPicker
             plotEntity={selectedPlot}
             onSelect={handleBuildingSelect}
-            onClose={handleClose}
           />
-        </Sheet.Content>
-      </Sheet.Root>
-
-      {/* Placement Mode Indicator */}
-      {isPlacementMode && buildingDef && (
-        <div
-          className={cn(
-            'fixed bottom-20 left-4 right-4 z-50',
-            'bg-accent text-white rounded-xl shadow-lg',
-            'flex items-center gap-3 p-3',
-            'animate-in slide-in-from-bottom-4 fade-in duration-200'
-          )}
-        >
-          {buildingDef.icon && (
-            <img src={buildingDef.icon} alt="" className="w-10 h-10 flex-shrink-0" />
-          )}
-          <div className="flex-1 min-w-0">
-            <div className="font-medium truncate">{buildingDef.name}</div>
-            <div className="text-sm text-white/80">Tap an empty plot to place</div>
-          </div>
-          <button
-            onClick={cancelPlacement}
-            className={cn(
-              'p-2 rounded-lg',
-              'bg-white/20 hover:bg-white/30',
-              'transition-colors'
-            )}
-            aria-label="Cancel placement"
-          >
-            <X className="size-5" />
-          </button>
-        </div>
-      )}
+        </Drawer.Content>
+      </Drawer.Root>
     </BuildingPlacementContext.Provider>
   )
 }
