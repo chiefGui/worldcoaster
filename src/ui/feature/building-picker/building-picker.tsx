@@ -25,7 +25,7 @@ export function BuildingPicker({ plotEntity, onSelect }: BuildingPickerProps) {
           Select a building, then tap a plot to place it.
         </p>
       )}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3">
         {buildings.map((building) => {
           const cost = BuildingAction.getBuildCost(building)
           return (
