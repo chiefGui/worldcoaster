@@ -95,7 +95,9 @@ export class GuestAction {
   static tickRide({ entity, dt }: { entity: Entity; dt: number }): boolean {
     const guest = World.get(entity, GuestComponent)
     if (!guest) return true
+    const wasPositive = guest.rideTimeRemaining > 0
     guest.rideTimeRemaining -= dt
-    return guest.rideTimeRemaining <= 0
+    // Only return true once when transitioning from positive to non-positive
+    return wasPositive && guest.rideTimeRemaining <= 0
   }
 }
