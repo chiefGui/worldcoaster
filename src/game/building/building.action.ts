@@ -43,7 +43,6 @@ export class BuildingAction {
     World.add(entity, BuildingStatsComponent, { visits: 0, revenue: 0 })
 
     StatAction.set({ entity, statId: 'capacity', value: def.capacity, source })
-    StatAction.set({ entity, statId: 'duration', value: def.duration, source })
 
     this.applyParkEffects(def.on.build?.park, source)
     this.applyAppeal(entity, def)
