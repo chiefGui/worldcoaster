@@ -137,10 +137,7 @@ function BuildingDetail({ building, onBack, onBuy }: BuildingDetailProps) {
           <StatRow label="Capacity" value={`${building.capacity} guests`} />
           <StatRow label="Appeal" value={`+${building.appeal}`} />
           {upkeep > 0 && (
-            <StatRow label="Upkeep" value={`$${upkeep}/tick`} />
-          )}
-          {building.duration > 0 && (
-            <StatRow label="Duration" value={`${building.duration}s`} />
+            <StatRow label="Upkeep" value={`$${upkeep}/day`} />
           )}
         </div>
 
