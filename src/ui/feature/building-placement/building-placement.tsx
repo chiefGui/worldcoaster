@@ -3,7 +3,7 @@ import type { Entity } from '@ecs/entity'
 import { BuildingRegistry, type BuildingId } from '@game/building/building.component'
 import { BuildingAction } from '@game/building/building.action'
 import { BuildingPicker } from '@ui/feature/building-picker/building-picker'
-import { Sheet } from '@ui/component/sheet'
+import { Drawer } from '@ui/component/drawer'
 import { Toast } from '@ui/component/toast'
 import { ActionBar } from '@ui/component/action-bar'
 
@@ -38,7 +38,7 @@ export type BuildingPlacementProviderProps = {
 function Provider({ children }: BuildingPlacementProviderProps) {
   const [selectedPlot, setSelectedPlot] = useState<Entity | null>(null)
   const [selectedBuilding, setSelectedBuilding] = useState<BuildingId | null>(null)
-  const sheetStore = Sheet.useStore()
+  const drawerStore = Drawer.useStore()
   const actionBar = ActionBar.useActionBar()
 
   const isPlacementMode = selectedBuilding !== null
@@ -47,16 +47,16 @@ function Provider({ children }: BuildingPlacementProviderProps) {
   const openForPlot = useCallback(
     (plotEntity: Entity) => {
       setSelectedPlot(plotEntity)
-      sheetStore.show()
+      drawerStore.show()
     },
-    [sheetStore]
+    [drawerStore]
   )
 
   // New flow: open picker → select building → enter placement mode
   const openPicker = useCallback(() => {
     setSelectedPlot(null)
-    sheetStore.show()
-  }, [sheetStore])
+    drawerStore.show()
+  }, [drawerStore])
 
   // Cancel placement mode
   const cancelPlacement = useCallback(() => {
@@ -78,9 +78,9 @@ function Provider({ children }: BuildingPlacementProviderProps) {
         // New flow: enter placement mode
         setSelectedBuilding(buildingId)
       }
-      sheetStore.hide()
+      drawerStore.hide()
     },
-    [selectedPlot, sheetStore]
+    [selectedPlot, drawerStore]
   )
 
   // Place the selected building on a plot (placement mode)
@@ -129,15 +129,15 @@ function Provider({ children }: BuildingPlacementProviderProps) {
     >
       {children}
 
-      {/* Building Picker Sheet */}
-      <Sheet.Root store={sheetStore}>
-        <Sheet.Content>
+      {/* Building Picker Drawer */}
+      <Drawer.Root store={drawerStore}>
+        <Drawer.Content side="right" className="flex flex-col">
           <BuildingPicker
             plotEntity={selectedPlot}
             onSelect={handleBuildingSelect}
           />
-        </Sheet.Content>
-      </Sheet.Root>
+        </Drawer.Content>
+      </Drawer.Root>
     </BuildingPlacementContext.Provider>
   )
 }
