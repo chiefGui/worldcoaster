@@ -8,6 +8,7 @@ export const ParkStat = {
   attractiveness: 'attractiveness',
   entryFee: 'entryFee',
   novelty: 'novelty',
+  unlockedLandRows: 'unlockedLandRows',
 } as const
 
 export type ParkStatId = (typeof ParkStat)[keyof typeof ParkStat]
@@ -65,5 +66,9 @@ export class Park {
 
   static canAfford(amount: number): boolean {
     return Park.money() >= amount
+  }
+
+  static unlockedLandRows(): number {
+    return Stat.get(Park.entity(), ParkStat.unlockedLandRows)
   }
 }
