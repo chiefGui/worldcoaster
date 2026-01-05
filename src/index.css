@@ -1,14 +1,33 @@
 @import 'tailwindcss';
 
-/* Monospace font for numbers only */
+/* Fontsource imports */
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/space-grotesk';
+@import '@fontsource-variable/outfit';
+@import '@fontsource-variable/jetbrains-mono';
+
+/* JetBrains Mono for numbers only (0-9) - always applied regardless of font choice */
 @font-face {
-  font-family: 'Mono Numbers';
-  src: local('ui-monospace'), local('SFMono-Regular'), local('Menlo'), local('Monaco'), local('Consolas'), local('Liberation Mono'), local('Courier New');
+  font-family: 'Tabular Numbers';
+  src: local('JetBrains Mono Variable'), local('JetBrains Mono');
   unicode-range: U+30-39; /* 0-9 */
+  font-feature-settings: 'tnum' 1; /* tabular figures */
 }
 
+/* Font definitions */
+:root {
+  --font-sans: 'Geist Variable', system-ui, sans-serif;
+}
+
+[data-font='geist'] { --font-sans: 'Geist Variable', system-ui, sans-serif; }
+[data-font='inter'] { --font-sans: 'Inter Variable', system-ui, sans-serif; }
+[data-font='space-grotesk'] { --font-sans: 'Space Grotesk Variable', system-ui, sans-serif; }
+[data-font='outfit'] { --font-sans: 'Outfit Variable', system-ui, sans-serif; }
+
 body {
-  font-family: 'Mono Numbers', ui-sans-serif, system-ui, sans-serif;
+  font-family: 'Tabular Numbers', var(--font-sans);
+  font-feature-settings: 'ss01', 'cv01'; /* stylistic alternates for better appearance */
 }
 
 /* Theme variables - Gray theme (default) */
