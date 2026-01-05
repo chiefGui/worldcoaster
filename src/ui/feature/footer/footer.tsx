@@ -1,11 +1,11 @@
+import type { ReactNode } from 'react'
 import { Hammer, Users } from 'lucide-react'
 import { Drawer } from '@ui/component/drawer'
-import { Sheet } from '@ui/component/sheet'
-import { BuildingPicker } from '@ui/feature/building-picker/building-picker'
+import { BuildingPlacement } from '@ui/feature/building-placement/building-placement'
 import { cn } from '@ui/lib/cn'
 
 type FooterButtonProps = {
-  icon: React.ReactNode
+  icon: ReactNode
   label: string
   onClick?: () => void
 }
@@ -27,7 +27,7 @@ function FooterButton({ icon, label, onClick }: FooterButtonProps) {
 }
 
 export function Footer() {
-  const buildSheetStore = Sheet.useStore()
+  const { openPicker } = BuildingPlacement.usePlacement()
   const staffDrawerStore = Drawer.useStore()
 
   return (
@@ -43,7 +43,7 @@ export function Footer() {
         <FooterButton
           icon={<Hammer className="size-6" />}
           label="Build"
-          onClick={() => buildSheetStore.show()}
+          onClick={openPicker}
         />
         <FooterButton
           icon={<Users className="size-6" />}
@@ -51,12 +51,6 @@ export function Footer() {
           onClick={() => staffDrawerStore.show()}
         />
       </footer>
-
-      <Sheet.Root store={buildSheetStore}>
-        <Sheet.Content>
-          <BuildingPicker plotEntity={null} onClose={() => buildSheetStore.hide()} />
-        </Sheet.Content>
-      </Sheet.Root>
 
       <Drawer.Root store={staffDrawerStore}>
         <Drawer.Content side="right" className="flex flex-col">

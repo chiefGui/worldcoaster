@@ -29,27 +29,47 @@ export type PlotSlotProps = {
 }
 
 export function PlotSlot({ entity }: PlotSlotProps) {
-  const { openForPlot } = BuildingPlacement.usePlacement()
+  const { openForPlot, isPlacementMode, placeOnPlot } = BuildingPlacement.usePlacement()
   const plot = useComponent(entity, PlotComponent)
 
   const buildingEntity = plot?.buildingEntity ?? null
   const isEmpty = buildingEntity === null
 
+  const handleClick = () => {
+    if (!isEmpty) return
+
+    if (isPlacementMode) {
+      // Placement mode: place the selected building
+      placeOnPlot(entity)
+    } else {
+      // Normal mode: open the picker for this plot
+      openForPlot(entity)
+    }
+  }
+
   return (
     <button
       type="button"
-      onClick={() => isEmpty && openForPlot(entity)}
+      onClick={handleClick}
       disabled={!isEmpty}
       className={cn(
-        'aspect-square rounded-lg border transition-colors',
+        'aspect-square rounded-lg border transition-all',
         'flex items-center justify-center',
         isEmpty
           ? 'border-dashed border-border hover:border-accent hover:bg-bg-tertiary cursor-pointer'
-          : 'border-solid border-border-subtle bg-bg-tertiary cursor-default'
+          : 'border-solid border-border-subtle bg-bg-tertiary cursor-default',
+        // Placement mode: highlight empty slots
+        isEmpty && isPlacementMode && [
+          'border-accent border-solid bg-accent/10',
+          'animate-pulse',
+        ]
       )}
     >
       {isEmpty ? (
-        <span className="text-2xl text-text-muted">+</span>
+        <span className={cn(
+          'text-2xl',
+          isPlacementMode ? 'text-accent' : 'text-text-muted'
+        )}>+</span>
       ) : (
         <BuildingDisplay entity={buildingEntity} />
       )}
