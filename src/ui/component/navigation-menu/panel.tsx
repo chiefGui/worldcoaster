@@ -33,9 +33,8 @@ export function NavigationMenuPanel({
       data-direction={direction}
       className={cn(
         'absolute inset-0 flex flex-col',
-        'animate-panel-in',
-        'data-[direction=forward]:animate-panel-slide-left',
-        'data-[direction=backward]:animate-panel-slide-right',
+        direction === 'forward' && 'animate-panel-slide-left',
+        direction === 'backward' && 'animate-panel-slide-right',
         className
       )}
     >
