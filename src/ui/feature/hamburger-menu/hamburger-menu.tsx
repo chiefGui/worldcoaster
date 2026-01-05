@@ -22,8 +22,7 @@ import { Modifier, ModifierComponent } from '@framework/modifier/modifier.compon
 import { Stat } from '@framework/stat/stat.component'
 import { CONFIG } from '@framework/config'
 import { cn } from '@ui/lib/cn'
-import { useTheme } from '@ui/provider/theme-provider'
-import { useFont } from '@ui/provider/font-provider'
+import { usePreferences } from '@ui/provider/preferences-provider'
 
 type HamburgerMenuContextValue = {
   open: (panelId?: string) => void
@@ -290,8 +289,7 @@ function SelectionListItem({ isSelected, isFirst, isLast, onClick, children }: S
 }
 
 function AppearanceSettingsContent() {
-  const { theme, setTheme, themes } = useTheme()
-  const { font, setFont, fonts } = useFont()
+  const { preferences, setTheme, setFont, themes, fonts } = usePreferences()
 
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-6">
@@ -304,16 +302,16 @@ function AppearanceSettingsContent() {
           {themes.map((t, index) => (
             <SelectionListItem
               key={t.id}
-              isSelected={theme === t.id}
+              isSelected={preferences.theme === t.id}
               isFirst={index === 0}
               isLast={index === themes.length - 1}
               onClick={() => setTheme(t.id)}
             >
               <ThemeSwatch colors={t.colors} />
-              <span className={cn('flex-1 text-sm font-medium', theme === t.id ? 'text-accent' : 'text-text-primary')}>
+              <span className={cn('flex-1 text-sm font-medium', preferences.theme === t.id ? 'text-accent' : 'text-text-primary')}>
                 {t.name}
               </span>
-              <SelectionIndicator isSelected={theme === t.id} />
+              <SelectionIndicator isSelected={preferences.theme === t.id} />
             </SelectionListItem>
           ))}
         </div>
@@ -328,19 +326,19 @@ function AppearanceSettingsContent() {
           {fonts.map((f, index) => (
             <SelectionListItem
               key={f.id}
-              isSelected={font === f.id}
+              isSelected={preferences.font === f.id}
               isFirst={index === 0}
               isLast={index === fonts.length - 1}
               onClick={() => setFont(f.id)}
             >
               <FontPreview fontFamily={f.preview} name={f.name} />
               <span
-                className={cn('flex-1 text-sm font-medium', font === f.id ? 'text-accent' : 'text-text-primary')}
+                className={cn('flex-1 text-sm font-medium', preferences.font === f.id ? 'text-accent' : 'text-text-primary')}
                 style={{ fontFamily: f.preview }}
               >
                 {f.name}
               </span>
-              <SelectionIndicator isSelected={font === f.id} />
+              <SelectionIndicator isSelected={preferences.font === f.id} />
             </SelectionListItem>
           ))}
         </div>
