@@ -22,7 +22,7 @@ import { Modifier, ModifierComponent } from '@framework/modifier/modifier.compon
 import { Stat } from '@framework/stat/stat.component'
 import { CONFIG } from '@framework/config'
 import { cn } from '@ui/lib/cn'
-import { useTheme } from '@ui/provider/theme-provider'
+import { usePreferences } from '@ui/provider/preferences-provider'
 
 type HamburgerMenuContextValue = {
   open: (panelId?: string) => void
@@ -236,55 +236,113 @@ function ThemeSwatch({ colors }: { colors: { bg: string; accent: string; text: s
   )
 }
 
+function FontPreview({ fontFamily, name }: { fontFamily: string; name: string }) {
+  return (
+    <div
+      className="size-10 rounded-lg overflow-hidden flex-shrink-0 bg-bg-tertiary ring-1 ring-white/10 flex items-center justify-center"
+      style={{ fontFamily }}
+    >
+      <span className="text-lg font-medium text-text-primary">Aa</span>
+    </div>
+  )
+}
+
+function SelectionIndicator({ isSelected }: { isSelected: boolean }) {
+  return (
+    <div
+      className={cn(
+        'size-5 rounded-full border-2 flex items-center justify-center transition-colors',
+        isSelected ? 'border-accent bg-accent' : 'border-border'
+      )}
+    >
+      {isSelected && <Check className="size-3 text-white" strokeWidth={3} />}
+    </div>
+  )
+}
+
+type SelectionListItemProps = {
+  isSelected: boolean
+  isFirst: boolean
+  isLast: boolean
+  onClick: () => void
+  children: React.ReactNode
+}
+
+function SelectionListItem({ isSelected, isFirst, isLast, onClick, children }: SelectionListItemProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'w-full flex items-center gap-3 px-3 py-3',
+        'text-left transition-colors',
+        'focus:outline-none focus-visible:bg-bg-tertiary',
+        !isFirst && 'border-t border-border-subtle',
+        isSelected ? 'bg-accent/5' : 'hover:bg-bg-tertiary/50',
+        isFirst && 'rounded-t-xl',
+        isLast && 'rounded-b-xl'
+      )}
+    >
+      {children}
+    </button>
+  )
+}
+
 function AppearanceSettingsContent() {
-  const { theme, setTheme, themes } = useTheme()
+  const { preferences, setTheme, setFont, themes, fonts } = usePreferences()
 
   return (
-    <div className="flex-1 overflow-y-auto p-4">
-      <div className="rounded-xl overflow-hidden border border-border-subtle">
-        {themes.map((t, index) => {
-          const isSelected = theme === t.id
-          const isFirst = index === 0
-          const isLast = index === themes.length - 1
-
-          return (
-            <button
+    <div className="flex-1 overflow-y-auto p-4 space-y-6">
+      {/* Theme Selection */}
+      <section>
+        <h3 className="text-xs font-medium text-text-muted uppercase tracking-wide mb-2 px-1">
+          Theme
+        </h3>
+        <div className="rounded-xl overflow-hidden border border-border-subtle">
+          {themes.map((t, index) => (
+            <SelectionListItem
               key={t.id}
-              type="button"
+              isSelected={preferences.theme === t.id}
+              isFirst={index === 0}
+              isLast={index === themes.length - 1}
               onClick={() => setTheme(t.id)}
-              className={cn(
-                'w-full flex items-center gap-3 px-3 py-3',
-                'text-left transition-colors',
-                'focus:outline-none focus-visible:bg-bg-tertiary',
-                !isFirst && 'border-t border-border-subtle',
-                isSelected ? 'bg-accent/5' : 'hover:bg-bg-tertiary/50',
-                isFirst && 'rounded-t-xl',
-                isLast && 'rounded-b-xl'
-              )}
             >
               <ThemeSwatch colors={t.colors} />
-              <span
-                className={cn(
-                  'flex-1 text-sm font-medium',
-                  isSelected ? 'text-accent' : 'text-text-primary'
-                )}
-              >
+              <span className={cn('flex-1 text-sm font-medium', preferences.theme === t.id ? 'text-accent' : 'text-text-primary')}>
                 {t.name}
               </span>
-              <div
-                className={cn(
-                  'size-5 rounded-full border-2 flex items-center justify-center transition-colors',
-                  isSelected
-                    ? 'border-accent bg-accent'
-                    : 'border-border'
-                )}
+              <SelectionIndicator isSelected={preferences.theme === t.id} />
+            </SelectionListItem>
+          ))}
+        </div>
+      </section>
+
+      {/* Font Selection */}
+      <section>
+        <h3 className="text-xs font-medium text-text-muted uppercase tracking-wide mb-2 px-1">
+          Font
+        </h3>
+        <div className="rounded-xl overflow-hidden border border-border-subtle">
+          {fonts.map((f, index) => (
+            <SelectionListItem
+              key={f.id}
+              isSelected={preferences.font === f.id}
+              isFirst={index === 0}
+              isLast={index === fonts.length - 1}
+              onClick={() => setFont(f.id)}
+            >
+              <FontPreview fontFamily={f.preview} name={f.name} />
+              <span
+                className={cn('flex-1 text-sm font-medium', preferences.font === f.id ? 'text-accent' : 'text-text-primary')}
+                style={{ fontFamily: f.preview }}
               >
-                {isSelected && <Check className="size-3 text-white" strokeWidth={3} />}
-              </div>
-            </button>
-          )
-        })}
-      </div>
+                {f.name}
+              </span>
+              <SelectionIndicator isSelected={preferences.font === f.id} />
+            </SelectionListItem>
+          ))}
+        </div>
+      </section>
     </div>
   )
 }

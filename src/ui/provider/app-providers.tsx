@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { Backdrop } from '@ui/component/backdrop'
 import { Toast } from '@ui/component/toast'
-import { ThemeProvider } from '@ui/provider/theme-provider'
+import { PreferencesProvider } from '@ui/provider/preferences-provider'
 
 export type AppProvidersProps = {
   children: ReactNode
@@ -9,10 +9,10 @@ export type AppProvidersProps = {
 
 export function AppProviders({ children }: AppProvidersProps) {
   return (
-    <ThemeProvider>
+    <PreferencesProvider>
       <Backdrop.Provider>
         <Toast.Provider>{children}</Toast.Provider>
       </Backdrop.Provider>
-    </ThemeProvider>
+    </PreferencesProvider>
   )
 }
