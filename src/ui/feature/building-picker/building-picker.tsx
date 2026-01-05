@@ -31,6 +31,11 @@ export function BuildingPicker({ plotEntity, onClose }: BuildingPickerProps) {
           Close
         </Sheet.Close>
       </div>
+      {!plotEntity && (
+        <p className="text-text-muted text-sm mb-4">
+          Tap an empty plot on the map to place a building.
+        </p>
+      )}
       <div className="grid grid-cols-2 gap-3">
         {buildings.map((building) => {
           const cost = BuildingAction.getBuildCost(building)
@@ -39,7 +44,8 @@ export function BuildingPicker({ plotEntity, onClose }: BuildingPickerProps) {
               key={building.id}
               type="button"
               onClick={() => handleSelect(building.id)}
-              className="p-4 rounded-lg bg-bg-tertiary border border-border-subtle hover:border-accent transition-colors text-left flex items-center gap-3"
+              disabled={!plotEntity}
+              className="p-4 rounded-lg bg-bg-tertiary border border-border-subtle hover:border-accent transition-colors text-left flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-border-subtle"
             >
               {building.icon && (
                 <img src={building.icon} alt="" className="w-10 h-10 flex-shrink-0" />
