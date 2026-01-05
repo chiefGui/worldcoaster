@@ -97,11 +97,6 @@ function Provider({ children }: BuildingPlacementProviderProps) {
     setSelectedBuilding(null)
   }, [])
 
-  const handleClose = useCallback(() => {
-    sheetStore.hide()
-    setSelectedPlot(null)
-  }, [sheetStore])
-
   const buildingDef = selectedBuilding ? BuildingRegistry.get(selectedBuilding) : null
 
   return (
@@ -123,7 +118,6 @@ function Provider({ children }: BuildingPlacementProviderProps) {
           <BuildingPicker
             plotEntity={selectedPlot}
             onSelect={handleBuildingSelect}
-            onClose={handleClose}
           />
         </Sheet.Content>
       </Sheet.Root>
