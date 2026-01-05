@@ -167,7 +167,7 @@ function InspectorPanel({ buildingEntity, onDemolish }: InspectorPanelProps) {
           {def.on.tick?.park?.money && (
             <EffectRow
               label="Operating Cost"
-              value={`$${Math.abs(def.on.tick.park.money)}/s`}
+              value={`$${Math.abs(def.on.tick.park.money)}/day`}
               positive={def.on.tick.park.money > 0}
             />
           )}
