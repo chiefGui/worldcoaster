@@ -2,7 +2,7 @@ import type { Entity } from '../entity'
 import { EntityManager } from '../entity'
 import { ComponentRegistry } from '../component'
 import { Tag } from '../tag'
-import { GameTime } from '../../framework/time'
+import { GameTime, type GameTimeState } from '../../framework/time'
 
 export type SerializedEntity = {
   id: Entity
@@ -14,11 +14,11 @@ export type SerializedWorld = {
   timestamp: number
   entities: SerializedEntity[]
   tags: Record<string, string[]>
-  gameTime: { elapsed: number; day: number; paused: boolean }
+  gameTime: GameTimeState
 }
 
 export class WorldSerializer {
-  private static readonly VERSION = 2
+  private static readonly VERSION = 3
 
   static serialize(): SerializedWorld {
     const entities: SerializedEntity[] = []
