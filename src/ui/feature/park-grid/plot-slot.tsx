@@ -3,6 +3,7 @@ import { useComponent } from '@ecs/react/use-component'
 import { PlotComponent } from '@game/plot/plot.component'
 import { BuildingComponent, BuildingRegistry } from '@game/building/building.component'
 import { BuildingPlacement } from '@ui/feature/building-placement/building-placement'
+import { BuildingInspector } from '@ui/feature/building-inspector'
 import { cn } from '@ui/lib/cn'
 
 type BuildingDisplayProps = {
@@ -30,20 +31,24 @@ export type PlotSlotProps = {
 
 export function PlotSlot({ entity }: PlotSlotProps) {
   const { openForPlot, isPlacementMode, placeOnPlot } = BuildingPlacement.usePlacement()
+  const { inspectBuilding } = BuildingInspector.useInspector()
   const plot = useComponent(entity, PlotComponent)
 
   const buildingEntity = plot?.buildingEntity ?? null
   const isEmpty = buildingEntity === null
 
   const handleClick = () => {
-    if (!isEmpty) return
-
-    if (isPlacementMode) {
-      // Placement mode: place the selected building
-      placeOnPlot(entity)
+    if (isEmpty) {
+      if (isPlacementMode) {
+        // Placement mode: place the selected building
+        placeOnPlot(entity)
+      } else {
+        // Normal mode: open the picker for this plot
+        openForPlot(entity)
+      }
     } else {
-      // Normal mode: open the picker for this plot
-      openForPlot(entity)
+      // Occupied slot: open the building inspector
+      inspectBuilding(buildingEntity)
     }
   }
 
@@ -51,13 +56,12 @@ export function PlotSlot({ entity }: PlotSlotProps) {
     <button
       type="button"
       onClick={handleClick}
-      disabled={!isEmpty}
       className={cn(
         'aspect-square rounded-lg border transition-all',
         'flex items-center justify-center',
         isEmpty
           ? 'border-dashed border-border hover:border-accent hover:bg-bg-tertiary cursor-pointer'
-          : 'border-solid border-border-subtle bg-bg-tertiary cursor-default',
+          : 'border-solid border-border-subtle bg-bg-tertiary cursor-pointer hover:border-accent',
         // Placement mode: highlight empty slots
         isEmpty && isPlacementMode && [
           'border-accent border-solid bg-accent/10',

@@ -9,13 +9,16 @@ import { CONFIG } from '@framework/config'
 import {
   Building,
   BuildingComponent,
+  BuildingStatsComponent,
   BuildingRegistry,
   type BuildingId,
   type BuildingDefinition,
   type StatChanges,
 } from './building.component'
 import { PlotComponent } from '../plot/plot.component'
-import { QueueComponent } from '../queue/queue.component'
+import { QueueComponent, Queue } from '../queue/queue.component'
+import { GuestAction } from '../guest/guest.action'
+import { GuestState } from '../guest/guest.component'
 
 export type BuildParams = {
   plotEntity: Entity
@@ -37,6 +40,7 @@ export class BuildingAction {
     const entity = World.spawn()
     World.add(entity, BuildingComponent, { id: buildingId, plotEntity })
     World.add(entity, StatComponent, { values: {} })
+    World.add(entity, BuildingStatsComponent, { visits: 0, revenue: 0 })
 
     StatAction.set({ entity, statId: 'capacity', value: def.capacity, source })
     StatAction.set({ entity, statId: 'duration', value: def.duration, source })
@@ -89,6 +93,73 @@ export class BuildingAction {
     for (const [statId, amount] of Object.entries(effects)) {
       StatAction.change({ entity: guestEntity, statId, delta: amount, source })
     }
+  }
+
+  static demolish({ buildingEntity, source = 'game' }: { buildingEntity: Entity; source?: string }): number {
+    const building = World.get(buildingEntity, BuildingComponent)
+    if (!building) return 0
+
+    const def = BuildingRegistry.get(building.id)
+    if (!def) return 0
+
+    const buildCost = this.getBuildCost(def)
+    const refund = Math.floor(buildCost * 0.5)
+
+    // Remove modifiers applied by this building (appeal, etc.)
+    ModifierAction.removeBySource({ source: `building:${def.id}:${buildingEntity}` })
+
+    // Find and remove the queue, reset guests to idle
+    const queueEntity = this.findQueueForBuilding(buildingEntity)
+    if (queueEntity) {
+      const guests = Queue.guests(queueEntity)
+      for (const guestEntity of guests) {
+        GuestAction.changeState({
+          entity: guestEntity,
+          newState: GuestState.idle,
+          target: null,
+          source,
+        })
+      }
+      World.despawn(queueEntity)
+    }
+
+    // Clear the plot reference
+    const plotEntity = building.plotEntity
+    const plot = World.get(plotEntity, PlotComponent)
+    if (plot) {
+      World.set(plotEntity, PlotComponent, { buildingEntity: null })
+    }
+
+    // Call onDestroy hook
+    def.onDestroy?.(buildingEntity)
+
+    // Refund money
+    if (refund > 0) {
+      ParkAction.addMoney({ amount: refund, source })
+    }
+
+    // Despawn the building entity
+    World.despawn(buildingEntity)
+
+    return refund
+  }
+
+  static getRefundAmount(buildingEntity: Entity): number {
+    const def = this.getDefinition({ entity: buildingEntity })
+    if (!def) return 0
+    const buildCost = this.getBuildCost(def)
+    return Math.floor(buildCost * 0.5)
+  }
+
+  private static queueQuery = World.createQuery([QueueComponent])
+
+  private static findQueueForBuilding(buildingEntity: Entity): Entity | null {
+    for (const queueEntity of World.query(this.queueQuery)) {
+      if (Queue.building(queueEntity) === buildingEntity) {
+        return queueEntity
+      }
+    }
+    return null
   }
 
   private static applyAppeal(buildingEntity: Entity, def: BuildingDefinition): void {

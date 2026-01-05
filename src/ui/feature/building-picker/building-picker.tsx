@@ -7,10 +7,10 @@ import { Sheet } from '@ui/component/sheet'
 export type BuildingPickerProps = {
   plotEntity: Entity | null
   onSelect: (buildingId: BuildingId) => void
-  onClose: () => void
+  onClose?: () => void
 }
 
-export function BuildingPicker({ plotEntity, onSelect, onClose }: BuildingPickerProps) {
+export function BuildingPicker({ plotEntity, onSelect }: BuildingPickerProps) {
   const buildings = BuildingRegistry.all()
 
   return (
