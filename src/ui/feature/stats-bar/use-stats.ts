@@ -9,6 +9,8 @@ import { Park, ParkStat } from '@game/park'
 import { CONFIG } from '@framework/config'
 
 const RATE_WINDOW_MS = 10_000 // 10 seconds = 10 game days
+const HISTORY_BUCKETS = 30 // 30 data points for sparkline
+const BUCKET_SIZE_MS = 1000 // 1 second = 1 game day
 
 type MoneySource = {
   source: string
@@ -20,6 +22,11 @@ type MoneyBreakdown = {
   income: MoneySource[]
   expenses: MoneySource[]
   netRate: number
+  totalIncome: number
+  totalExpenses: number
+  incomeHistory: number[]
+  entryFee: number
+  entryFeeIncome: number
 }
 
 type GuestMetrics = {
@@ -39,11 +46,13 @@ function formatSourceLabel(source: string): string {
 export function useMoneyStats() {
   const stats = useComponent(Park.entity(), StatComponent)
   const money = stats?.values[ParkStat.money] ?? 0
+  const entryFee = stats?.values[ParkStat.entryFee] ?? CONFIG.park.initial.entryFee
 
   // Calculate rate from effect history
   const breakdown = useTick(
     useCallback((): MoneyBreakdown => {
-      const since = Date.now() - RATE_WINDOW_MS
+      const now = Date.now()
+      const since = now - RATE_WINDOW_MS
       const effects = EffectProcessor.queryStat(ParkStat.money, { since })
 
       // Group by source
@@ -55,33 +64,69 @@ export function useMoneyStats() {
 
       const income: MoneySource[] = []
       const expenses: MoneySource[] = []
-      let netRate = 0
+      let totalIncome = 0
+      let totalExpenses = 0
+      let entryFeeIncome = 0
 
       for (const [source, amount] of sourceMap) {
         const entry = { source, label: formatSourceLabel(source), amount }
         if (amount > 0) {
           income.push(entry)
+          totalIncome += amount
+          if (source === 'entry-fee') {
+            entryFeeIncome = amount
+          }
         } else if (amount < 0) {
           expenses.push(entry)
+          totalExpenses += Math.abs(amount)
         }
-        netRate += amount
       }
 
       // Sort by absolute amount
       income.sort((a, b) => b.amount - a.amount)
       expenses.sort((a, b) => a.amount - b.amount)
 
+      // Build income history for sparkline (last 30 buckets)
+      const incomeHistory: number[] = []
+      const allEffects = EffectProcessor.queryStat(ParkStat.money, {
+        since: now - HISTORY_BUCKETS * BUCKET_SIZE_MS,
+      })
+
+      for (let i = 0; i < HISTORY_BUCKETS; i++) {
+        const bucketStart = now - (HISTORY_BUCKETS - i) * BUCKET_SIZE_MS
+        const bucketEnd = bucketStart + BUCKET_SIZE_MS
+        let bucketIncome = 0
+
+        for (const effect of allEffects) {
+          if (
+            effect.timestamp >= bucketStart &&
+            effect.timestamp < bucketEnd &&
+            effect.payload.delta > 0
+          ) {
+            bucketIncome += effect.payload.delta
+          }
+        }
+        incomeHistory.push(bucketIncome)
+      }
+
       // Convert to per-day rate (window is in seconds, 1 day = 1 second)
       const windowDays = RATE_WINDOW_MS / 1000
+      const netRate = (totalIncome - totalExpenses) / windowDays
+
       return {
         income: income.map(i => ({ ...i, amount: i.amount / windowDays })),
-        expenses: expenses.map(e => ({ ...e, amount: e.amount / windowDays })),
-        netRate: netRate / windowDays,
+        expenses: expenses.map(e => ({ ...e, amount: Math.abs(e.amount) / windowDays })),
+        netRate,
+        totalIncome,
+        totalExpenses,
+        incomeHistory,
+        entryFee,
+        entryFeeIncome: entryFeeIncome / windowDays,
       }
-    }, [])
+    }, [entryFee])
   )
 
-  return { money, breakdown }
+  return { money, breakdown, entryFee }
 }
 
 export function useGuestStats() {
