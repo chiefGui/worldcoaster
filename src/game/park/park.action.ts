@@ -1,5 +1,5 @@
 import { World } from '@ecs/world'
-import { StatComponent } from '@framework/stat/stat.component'
+import { Stat, StatComponent } from '@framework/stat/stat.component'
 import { StatAction } from '@framework/stat/stat.action'
 import { CONFIG } from '@framework/config'
 import { Park, ParkComponent, ParkStat } from './park.component'
@@ -30,11 +30,12 @@ export class ParkAction {
 
     Park.setEntity(entity)
 
-    StatAction.set({ entity, statId: ParkStat.money, value: initialMoney, source: 'park-init' })
-    StatAction.set({ entity, statId: ParkStat.attractiveness, value: initialAttractiveness, source: 'park-init' })
-    StatAction.set({ entity, statId: ParkStat.entryFee, value: initialEntryFee, source: 'park-init' })
-    StatAction.set({ entity, statId: ParkStat.novelty, value: initialNovelty, source: 'park-init' })
-    StatAction.set({ entity, statId: ParkStat.unlockedLandRows, value: initialUnlockedLandRows, source: 'park-init' })
+    // Use Stat.set directly for initialization - no effect tracking needed
+    Stat.set(entity, ParkStat.money, initialMoney)
+    Stat.set(entity, ParkStat.attractiveness, initialAttractiveness)
+    Stat.set(entity, ParkStat.entryFee, initialEntryFee)
+    Stat.set(entity, ParkStat.novelty, initialNovelty)
+    Stat.set(entity, ParkStat.unlockedLandRows, initialUnlockedLandRows)
   }
 
   static addMoney(params: { amount: number; source: string }): void {
