@@ -1,11 +1,12 @@
 export class Format {
   static money(value: number): string {
-    return `$${value.toLocaleString()}`
+    return `$${Math.round(value).toLocaleString()}`
   }
 
   static moneyCompact(value: number): string {
-    const absValue = Math.abs(value)
-    const sign = value < 0 ? '-' : ''
+    const rounded = Math.round(value)
+    const absValue = Math.abs(rounded)
+    const sign = rounded < 0 ? '-' : ''
 
     if (absValue >= 1_000_000) {
       const millions = absValue / 1_000_000
