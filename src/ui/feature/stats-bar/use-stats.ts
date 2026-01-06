@@ -5,12 +5,10 @@ import { useTick } from '@ecs/react/use-world'
 import { EffectProcessor } from '@framework/effect'
 import { StatComponent } from '@framework/stat/stat.component'
 import { GuestComponent } from '@game/guest/guest.component'
-import { Park, ParkStat } from '@game/park'
+import { Park, ParkStat, FinancialHistoryComponent } from '@game/park'
 import { CONFIG } from '@framework/config'
 
 const RATE_WINDOW_MS = 10_000 // 10 seconds = 10 game days
-const HISTORY_BUCKETS = 30 // 30 data points for sparkline
-const BUCKET_SIZE_MS = 1000 // 1 second = 1 game day
 
 type MoneySource = {
   source: string
@@ -44,15 +42,24 @@ function formatSourceLabel(source: string): string {
 }
 
 export function useMoneyStats() {
-  const stats = useComponent(Park.entity(), StatComponent)
+  const parkEntity = Park.entity()
+  const stats = useComponent(parkEntity, StatComponent)
+  const financialHistory = useComponent(parkEntity, FinancialHistoryComponent)
+
   const money = stats?.values[ParkStat.money] ?? 0
   const entryFee = stats?.values[ParkStat.entryFee] ?? CONFIG.park.initial.entryFee
 
-  // Calculate rate from effect history
+  // Get persisted income history for sparkline (survives page refresh)
+  const incomeHistory = useMemo(() => {
+    if (!financialHistory) return []
+    // Include current day's income at the end
+    return [...financialHistory.dailyIncome, financialHistory.currentDayIncome]
+  }, [financialHistory])
+
+  // Calculate rate from effect history (real-time, in-memory)
   const breakdown = useTick(
     useCallback((): MoneyBreakdown => {
-      const now = Date.now()
-      const since = now - RATE_WINDOW_MS
+      const since = Date.now() - RATE_WINDOW_MS
       const effects = EffectProcessor.queryStat(ParkStat.money, { since })
 
       // Group by source
@@ -86,29 +93,6 @@ export function useMoneyStats() {
       income.sort((a, b) => b.amount - a.amount)
       expenses.sort((a, b) => a.amount - b.amount)
 
-      // Build income history for sparkline (last 30 buckets)
-      const incomeHistory: number[] = []
-      const allEffects = EffectProcessor.queryStat(ParkStat.money, {
-        since: now - HISTORY_BUCKETS * BUCKET_SIZE_MS,
-      })
-
-      for (let i = 0; i < HISTORY_BUCKETS; i++) {
-        const bucketStart = now - (HISTORY_BUCKETS - i) * BUCKET_SIZE_MS
-        const bucketEnd = bucketStart + BUCKET_SIZE_MS
-        let bucketIncome = 0
-
-        for (const effect of allEffects) {
-          if (
-            effect.timestamp >= bucketStart &&
-            effect.timestamp < bucketEnd &&
-            effect.payload.delta > 0
-          ) {
-            bucketIncome += effect.payload.delta
-          }
-        }
-        incomeHistory.push(bucketIncome)
-      }
-
       // Convert to per-day rate (window is in seconds, 1 day = 1 second)
       const windowDays = RATE_WINDOW_MS / 1000
       const netRate = (totalIncome - totalExpenses) / windowDays
@@ -123,7 +107,7 @@ export function useMoneyStats() {
         entryFee,
         entryFeeIncome: entryFeeIncome / windowDays,
       }
-    }, [entryFee])
+    }, [entryFee, incomeHistory])
   )
 
   return { money, breakdown, entryFee }

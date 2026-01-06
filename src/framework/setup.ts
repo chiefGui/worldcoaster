@@ -7,8 +7,10 @@ import { NoveltySystem } from '@game/novelty/novelty.system'
 import { AttractionSystem } from '@game/attraction/attraction.system'
 import { GuestSystem } from '@game/guest/guest.system'
 import { QueueSystem } from '@game/queue/queue.system'
-import { Park, ParkComponent, ParkAction } from '@game/park'
-import { EffectProcessor } from './effect'
+import { FinancialHistorySystem } from '@game/park/financial-history.system'
+import { Park, ParkComponent, ParkAction, ParkStat } from '@game/park'
+import { FinancialHistory } from '@game/park/financial-history.component'
+import { EffectProcessor, type StatChangePayload } from './effect'
 import { GameTime } from './time'
 import { Modifier } from './modifier/modifier.component'
 import { registerBuildings } from '@content/building'
@@ -23,7 +25,22 @@ export class Game {
 
     registerBuildings()
     ParkAction.init()
-    SystemRegistry.registerAll(TimeSystem, ModifierSystem, NoveltySystem, AttractionSystem, GuestSystem, QueueSystem)
+    SystemRegistry.registerAll(
+      TimeSystem,
+      ModifierSystem,
+      NoveltySystem,
+      AttractionSystem,
+      GuestSystem,
+      QueueSystem,
+      FinancialHistorySystem
+    )
+
+    // Hook into effect processor to track money transactions
+    EffectProcessor.onAfter<StatChangePayload>('stat:change', (effect) => {
+      if (effect.payload.statId === ParkStat.money) {
+        FinancialHistory.recordTransaction(effect.payload.delta)
+      }
+    })
   }
 
   static async start(): Promise<void> {
