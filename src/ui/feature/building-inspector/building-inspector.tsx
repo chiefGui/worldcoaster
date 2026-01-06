@@ -16,6 +16,7 @@ import { ConfirmationDialog } from '@ui/component/confirmation-dialog'
 import { Button } from '@ui/component/button'
 import { Toast } from '@ui/component/toast'
 import { cn } from '@ui/lib/cn'
+import { Format } from '@ui/lib/format'
 
 type BuildingInspectorContextValue = {
   inspectBuilding: (buildingEntity: Entity) => void
@@ -69,7 +70,7 @@ function Provider({ children }: BuildingInspectorProviderProps) {
     drawerStore.hide()
     setInspectedBuilding(null)
 
-    Toast.success(`${def?.name ?? 'Building'} demolished! +$${refund} refunded`)
+    Toast.success(`${def?.name ?? 'Building'} demolished! +${Format.money(refund)} refunded`)
   }, [inspectedBuilding, confirmationStore, drawerStore])
 
   return (
@@ -159,7 +160,7 @@ function InspectorPanel({ buildingEntity, onDemolish }: InspectorPanelProps) {
         {/* Revenue */}
         {(stats?.revenue ?? 0) > 0 && (
           <div className="bg-success/10 rounded-lg p-3 text-center">
-            <div className="text-lg font-semibold text-success">${stats?.revenue ?? 0}</div>
+            <div className="text-lg font-semibold text-success">{Format.money(stats?.revenue ?? 0)}</div>
             <div className="text-xs text-success/80">Revenue Generated</div>
           </div>
         )}
@@ -190,7 +191,7 @@ function InspectorPanel({ buildingEntity, onDemolish }: InspectorPanelProps) {
       {/* Footer */}
       <div className="p-4 border-t border-border space-y-3">
         <div className="text-sm text-text-secondary text-center">
-          Demolishing will refund <span className="text-success font-medium">${refund}</span> (50%)
+          Demolishing will refund <span className="text-success font-medium">{Format.money(refund)}</span> (50%)
         </div>
         <Button
           variant="secondary"
@@ -219,7 +220,7 @@ function DemolishConfirmation({ buildingEntity, onConfirm }: DemolishConfirmatio
     <ConfirmationDialog.Content variant="danger">
       <ConfirmationDialog.Heading>Demolish {def?.name ?? 'Building'}?</ConfirmationDialog.Heading>
       <ConfirmationDialog.Description>
-        You'll receive ${refund} refund (50% of original cost). This action cannot be undone.
+        You'll receive {Format.money(refund)} refund (50% of original cost). This action cannot be undone.
       </ConfirmationDialog.Description>
       <ConfirmationDialog.Actions>
         <ConfirmationDialog.Cancel />
