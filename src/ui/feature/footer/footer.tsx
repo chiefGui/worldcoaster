@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
-import { Hammer, Users } from 'lucide-react'
+import { Hammer, Users, Sparkles } from 'lucide-react'
 import { Drawer } from '@ui/component/drawer'
 import { BuildingPlacement } from '@ui/feature/building-placement/building-placement'
+import { PerkPanel } from '@ui/feature/perk-panel/perk-panel'
 import { cn } from '@ui/lib/cn'
 
 type FooterButtonProps = {
@@ -28,6 +29,7 @@ function FooterButton({ icon, label, onClick }: FooterButtonProps) {
 
 export function Footer() {
   const { openPicker } = BuildingPlacement.usePlacement()
+  const { openPanel: openPerks } = PerkPanel.usePerkPanel()
   const staffDrawerStore = Drawer.useStore()
 
   return (
@@ -49,6 +51,11 @@ export function Footer() {
           icon={<Users className="size-6" />}
           label="Staff"
           onClick={() => staffDrawerStore.show()}
+        />
+        <FooterButton
+          icon={<Sparkles className="size-6" />}
+          label="Perks"
+          onClick={openPerks}
         />
       </footer>
 

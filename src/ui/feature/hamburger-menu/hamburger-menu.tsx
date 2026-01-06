@@ -6,16 +6,18 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { Menu, Settings, HelpCircle, Volume2, Palette, RotateCcw, AlertTriangle, Check, Code, Activity } from 'lucide-react'
+import { Menu, Settings, HelpCircle, Volume2, Palette, RotateCcw, AlertTriangle, Check, Code, Activity, Building2, Lock } from 'lucide-react'
 import * as Ariakit from '@ariakit/react'
 import { Drawer } from '@ui/component/drawer'
 import { NavigationMenu } from '@ui/component/navigation-menu'
 import { Toast } from '@ui/component/toast'
 import { World } from '@ecs/world'
 import { useTick } from '@ecs/react/use-world'
+import { useComponent } from '@ecs/react/use-component'
 import { Persistence } from '@ecs/persistence/persistence'
 import { Game } from '@framework/setup'
-import { Park, ParkStat } from '@game/park/park.component'
+import { Park, ParkStat, ParkAction } from '@game/park'
+import { Perk, PerkStateComponent } from '@game/perk'
 import { GuestComponent } from '@game/guest/guest.component'
 import { BuildingComponent } from '@game/building/building.component'
 import { Modifier, ModifierComponent } from '@framework/modifier/modifier.component'
@@ -125,6 +127,15 @@ function DefaultMenuContent({ onClose }: DefaultMenuContentProps) {
         </NavigationMenu.Header>
         <div className="flex-1 overflow-y-auto">
           <NavigationMenu.Section>
+            <NavigationMenu.Item
+              to="park"
+              icon={<Building2 className="size-5" />}
+              description="Manage park settings"
+            >
+              Park
+            </NavigationMenu.Item>
+          </NavigationMenu.Section>
+          <NavigationMenu.Section>
             <NavigationMenu.Item to="settings" icon={<Settings className="size-5" />}>
               Settings
             </NavigationMenu.Item>
@@ -138,6 +149,12 @@ function DefaultMenuContent({ onClose }: DefaultMenuContentProps) {
             </NavigationMenu.Item>
           </NavigationMenu.Section>
         </div>
+      </NavigationMenu.Panel>
+
+      {/* Park Management Panel */}
+      <NavigationMenu.Panel id="park" parent="root" title="Park">
+        <NavigationMenu.Header />
+        <ParkManagementContent />
       </NavigationMenu.Panel>
 
       {/* Settings Panel */}
@@ -528,6 +545,116 @@ function ResetConfirmationContent({ onClose }: ResetConfirmationContentProps) {
       >
         {isResetting ? 'Resetting...' : 'Reset Everything'}
       </button>
+    </div>
+  )
+}
+
+function ParkManagementContent() {
+  const parkEntity = Park.entity()
+
+  // Subscribe to perk state for reactive updates
+  useComponent(parkEntity, PerkStateComponent)
+
+  const hasEntryFeeControl = Perk.isPurchased('entry-fee-control')
+  const currentFee = Park.entryFee()
+  const [pendingFee, setPendingFee] = useState<number | null>(null)
+
+  const displayFee = pendingFee ?? currentFee
+
+  const handleFeeChange = useCallback((delta: number) => {
+    const newFee = Math.max(0, Math.min(100, displayFee + delta))
+    setPendingFee(newFee)
+  }, [displayFee])
+
+  const handleApplyFee = useCallback(() => {
+    if (pendingFee !== null && pendingFee !== currentFee) {
+      ParkAction.setEntryFee({ amount: pendingFee, source: 'player' })
+      Toast.success(`Entry fee set to $${pendingFee}`)
+      setPendingFee(null)
+    }
+  }, [pendingFee, currentFee])
+
+  const hasChanges = pendingFee !== null && pendingFee !== currentFee
+
+  return (
+    <div className="flex-1 overflow-y-auto p-4 space-y-6">
+      {/* Entry Fee Section */}
+      <section>
+        <h3 className="text-xs font-medium text-text-muted uppercase tracking-wide mb-3 px-1">
+          Entry Fee
+        </h3>
+
+        {hasEntryFeeControl ? (
+          <div className="rounded-xl border border-border-subtle p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-text-secondary">Gate admission</span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleFeeChange(-5)}
+                  disabled={displayFee <= 0}
+                  className={cn(
+                    'size-8 rounded-lg flex items-center justify-center text-lg font-medium',
+                    'bg-bg-tertiary text-text-primary',
+                    'hover:bg-bg-tertiary/80 transition-colors',
+                    'disabled:opacity-40 disabled:cursor-not-allowed'
+                  )}
+                >
+                  −
+                </button>
+                <span className="w-16 text-center text-xl font-bold text-text-primary">
+                  ${displayFee}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleFeeChange(5)}
+                  disabled={displayFee >= 100}
+                  className={cn(
+                    'size-8 rounded-lg flex items-center justify-center text-lg font-medium',
+                    'bg-bg-tertiary text-text-primary',
+                    'hover:bg-bg-tertiary/80 transition-colors',
+                    'disabled:opacity-40 disabled:cursor-not-allowed'
+                  )}
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            {hasChanges && (
+              <button
+                type="button"
+                onClick={handleApplyFee}
+                className={cn(
+                  'w-full py-2 px-4 rounded-lg font-medium text-sm',
+                  'bg-accent text-white',
+                  'hover:bg-accent/90 transition-colors'
+                )}
+              >
+                Apply Changes
+              </button>
+            )}
+
+            <p className="text-xs text-text-muted">
+              Higher fees increase revenue per guest but may reduce visitor count.
+            </p>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-border-subtle p-4 bg-bg-tertiary/30">
+            <div className="flex items-center gap-3">
+              <div className="size-10 rounded-lg bg-bg-secondary flex items-center justify-center">
+                <Lock className="size-5 text-text-muted" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-text-primary">Entry Fee Control</p>
+                <p className="text-xs text-text-muted mt-0.5">
+                  Purchase the "Entry Fee Control" perk to unlock custom gate pricing.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
     </div>
   )
 }
