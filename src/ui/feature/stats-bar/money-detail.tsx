@@ -1,8 +1,11 @@
 import { useCallback } from 'react'
+import { Lock } from 'lucide-react'
 import { Drawer, type DrawerProps } from '@ui/component/drawer'
 import { Format } from '@ui/lib/format'
 import { cn } from '@ui/lib/cn'
-import { ParkAction } from '@game/park/park.action'
+import { useComponent } from '@ecs/react/use-component'
+import { ParkAction, Park } from '@game/park'
+import { Perk, PerkStateComponent } from '@game/perk'
 import { Sparkline } from './sparkline'
 import { useMoneyStats } from './use-stats'
 
@@ -12,10 +15,15 @@ export function MoneyDetail({ store }: MoneyDetailProps) {
   const { money, breakdown, entryFee } = useMoneyStats()
   const { income, expenses, netRate, incomeHistory, entryFeeIncome } = breakdown
 
+  // Subscribe to perk state for reactive updates
+  useComponent(Park.entity(), PerkStateComponent)
+  const hasEntryFeeControl = Perk.isPurchased('entry-fee-control')
+
   const handleFeeChange = useCallback((delta: number) => {
+    if (!hasEntryFeeControl) return
     const newFee = Math.max(0, entryFee + delta)
     ParkAction.setEntryFee({ amount: newFee, source: 'player' })
-  }, [entryFee])
+  }, [entryFee, hasEntryFeeControl])
 
   return (
     <Drawer.Root store={store}>
@@ -56,12 +64,17 @@ export function MoneyDetail({ store }: MoneyDetailProps) {
           </section>
 
           {/* Entry Fee Control */}
-          <section className="bg-bg-tertiary rounded-lg p-3">
+          <section className={cn('bg-bg-tertiary rounded-lg p-3', !hasEntryFeeControl && 'opacity-60')}>
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-sm font-medium text-text-primary">Entry Fee</div>
+                <div className="text-sm font-medium text-text-primary flex items-center gap-1.5">
+                  Entry Fee
+                  {!hasEntryFeeControl && <Lock className="size-3 text-text-muted" />}
+                </div>
                 <div className="text-xs text-text-muted mt-0.5">
-                  {entryFeeIncome > 0 ? (
+                  {!hasEntryFeeControl ? (
+                    'Unlock via Perks'
+                  ) : entryFeeIncome > 0 ? (
                     <span className="text-success">+{Format.moneyCompact(entryFeeIncome)}/day</span>
                   ) : (
                     'Per guest admission'
@@ -72,7 +85,7 @@ export function MoneyDetail({ store }: MoneyDetailProps) {
                 <button
                   type="button"
                   onClick={() => handleFeeChange(-1)}
-                  disabled={entryFee <= 0}
+                  disabled={!hasEntryFeeControl || entryFee <= 0}
                   className={cn(
                     'w-8 h-8 rounded-lg flex items-center justify-center',
                     'bg-bg-secondary border border-border-subtle',
@@ -91,11 +104,13 @@ export function MoneyDetail({ store }: MoneyDetailProps) {
                 <button
                   type="button"
                   onClick={() => handleFeeChange(1)}
+                  disabled={!hasEntryFeeControl}
                   className={cn(
                     'w-8 h-8 rounded-lg flex items-center justify-center',
                     'bg-bg-secondary border border-border-subtle',
                     'text-text-primary font-medium text-lg',
-                    'hover:bg-bg-primary hover:border-border transition-colors'
+                    'hover:bg-bg-primary hover:border-border transition-colors',
+                    'disabled:opacity-30 disabled:cursor-not-allowed'
                   )}
                 >
                   +

@@ -1,5 +1,5 @@
 import { useState, createContext, useContext, type ReactNode } from 'react'
-import { ChevronLeft, Check, Lock, Sparkles, Star } from 'lucide-react'
+import { ChevronLeft, Check, Lock, Sparkles } from 'lucide-react'
 import { useComponent } from '@ecs/react/use-component'
 import { StatComponent } from '@framework/stat/stat.component'
 import { GameTime } from '@framework/time'
@@ -168,46 +168,9 @@ function PerkListItem({ perk, onSelect }: PerkListItemProps) {
             )}
           </div>
           <p className="text-xs text-text-muted mt-0.5 line-clamp-2">{perk.description}</p>
-          {!isPurchased && perk.requirements && (
-            <div className="flex flex-wrap gap-1.5 mt-2">
-              {perk.requirements.minAttractiveness !== undefined && (
-                <RequirementChip
-                  icon={<Star className="size-3" />}
-                  label={`${perk.requirements.minAttractiveness}+`}
-                  met={Park.attractiveness() >= perk.requirements.minAttractiveness}
-                />
-              )}
-              {perk.requirements.minDay !== undefined && (
-                <RequirementChip
-                  label={`Day ${perk.requirements.minDay}`}
-                  met={GameTime.getTotalDays() >= perk.requirements.minDay}
-                />
-              )}
-            </div>
-          )}
         </div>
       </div>
     </button>
-  )
-}
-
-type RequirementChipProps = {
-  icon?: ReactNode
-  label: string
-  met: boolean
-}
-
-function RequirementChip({ icon, label, met }: RequirementChipProps) {
-  return (
-    <span
-      className={cn(
-        'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium',
-        met ? 'bg-success/20 text-success' : 'bg-bg-secondary text-text-muted'
-      )}
-    >
-      {icon}
-      {label}
-    </span>
   )
 }
 

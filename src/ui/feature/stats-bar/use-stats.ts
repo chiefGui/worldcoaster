@@ -145,3 +145,9 @@ export function useGuestStats() {
 
   return metrics
 }
+
+export function useAttractivenessStats() {
+  const stats = useComponent(Park.entity(), StatComponent)
+  const attractiveness = stats?.values[ParkStat.attractiveness] ?? 0
+  return { attractiveness }
+}
