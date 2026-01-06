@@ -3,6 +3,19 @@ import { StatComponent } from '@framework/stat/stat.component'
 import { StatAction } from '@framework/stat/stat.action'
 import { CONFIG } from '@framework/config'
 import { Park, ParkComponent, ParkStat } from './park.component'
+import {
+  FinancialHistoryComponent,
+  setFinancialHistoryParkGetter,
+} from './financial-history.component'
+
+// Set up the getter for financial history (avoids circular dep)
+setFinancialHistoryParkGetter(() => {
+  try {
+    return Park.entity()
+  } catch {
+    return null
+  }
+})
 
 export type ParkInitParams = {
   name?: string
@@ -27,6 +40,13 @@ export class ParkAction {
     const entity = World.spawn()
     World.add(entity, ParkComponent, { name })
     World.add(entity, StatComponent, { values: {} })
+    World.add(entity, FinancialHistoryComponent, {
+      dailyIncome: [],
+      dailyExpenses: [],
+      lastRecordedDay: -1,
+      currentDayIncome: 0,
+      currentDayExpenses: 0,
+    })
 
     Park.setEntity(entity)
 
